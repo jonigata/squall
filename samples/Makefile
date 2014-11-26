@@ -17,3 +17,5 @@ clean:
 	rm -f simple.o export_object.o
 	rm -f simple export_object
 
+rebuild:
+	make clean && make

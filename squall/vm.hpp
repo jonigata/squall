@@ -6,6 +6,7 @@
 #include <cassert>
 #include <functional>
 #include <unordered_map>
+#include <memory>
 #include "make_function.hpp"
 #include "partial_apply.hpp"
 //#include "is_dereferencable.hpp"
@@ -90,6 +91,7 @@ public:
         check_argument_type(vm, index, OT_USERDATA, "userdata");
         SQUserPointer r;
         sq_getuserdata(vm, index, &r, NULL);
+        // TODO: 型チェック
         return *((const T*)r);
     }
 };
@@ -231,31 +233,47 @@ void dp(HSQUIRRELVM vm, int index) {
 }
 */
 
-template <class F>
+template <class F, int Offset>
 SQInteger stub(HSQUIRRELVM vm) {
     void* fp;
     sq_getuserpointer(vm, -1, &fp);
+    // TODO: 例外を拾ってsquirrel例外を出す
     const F& f = *((F*)fp);
-    return stub_aux(vm, f, 2);
+    return stub_aux(vm, f, Offset);
 }
 
 template <class R, class... T>
 void defun(
     HSQUIRRELVM vm, const std::string& name, std::function<R (T...)> f) {
+
     static std::unordered_map<std::string, std::function<R (T...)> > m;
-    auto p = &(m[name] = f); // TODO: VMごとにする
-    sq_pushroottable(vm);
+    auto p = &(m[name] = f); // TODO: VMに格納すべき
+
     sq_pushstring(vm, name.c_str(), -1);
     sq_pushuserpointer(vm, p);
-    sq_newclosure(vm, stub<std::function<R (T...)> >, 1);
+    sq_newclosure(vm, stub<std::function<R (T...)>, 2>, 1);
     sq_newslot(vm, -3, SQFalse);
+}
+
+template <class R, class... T>
+void defun_global(
+    HSQUIRRELVM vm, const std::string& name, std::function<R (T...)> f) {
+    sq_pushroottable(vm);
+    defun(vm, name, f);
     sq_pop(vm, 1);
 }
+
+////////////////////////////////////////////////////////////////
+// klass base
+class KlassImpBase {
+public:
+    virtual ~KlassImpBase() {}
+};
 
 }
 
 ////////////////////////////////////////////////////////////////
-// interface class
+// VM interface
 class VM {
 public:
     VM(int stack_size = 1024) {
@@ -275,16 +293,21 @@ public:
 
     template <class F>
     void defun(const char* name, F f) {
-        detail::defun(vm_, name, to_function(f));
+        detail::defun_global(vm_, name, to_function(f));
     }
 
     template <class F>
     void defun(const std::string& name, F f) {
-        detail::defun(vm_, name, to_function(f));
+        detail::defun_global(vm_, name, to_function(f));
     }
 
     void printtop(const char* s) {
         printf("%s: %lld\n", s, sq_gettop(vm_));
+    }
+
+    template <class K>
+    void add_klass(const std::string& name) {
+        klasses_[name] = std::make_shared<K>(handle());
     }
 
 private:
@@ -293,6 +316,8 @@ protected:
 
 private:
     HSQUIRRELVM vm_;
+    std::unordered_map<std::string, std::shared_ptr<detail::KlassImpBase>> klasses_;
+    
 };
 
 }
