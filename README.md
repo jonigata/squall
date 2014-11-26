@@ -50,14 +50,14 @@ int main() {
 }
 ```
 
+## Call C++ from squirrel
+
 ```test.nut
 function baz() {
   print("==== baz called\n");
   return bar(4649);
 }
 ```
-
-## Call C++ from squirrel
 
 ```
 int main() {
