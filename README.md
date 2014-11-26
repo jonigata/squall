@@ -2,7 +2,7 @@
 
 A squirrel C++11 binding
 
-## Make VM but do nothing
+## Making VM but do nothing
 
 ```
 #include "squall/vm.hpp"
@@ -13,7 +13,7 @@ int main() {
 }
 ```
 
-## Make VM with standard library but do nothing
+## Making VM with standard library but do nothing
 
 ```
 #include "squall/vmstd.hpp"
@@ -24,7 +24,7 @@ int main() {
 }
 ```
 
-## Call squirrel function from C++
+## Calling squirrel function from C++
 
 ```test.nut
 function foo() {
@@ -50,7 +50,7 @@ int main() {
 }
 ```
 
-## Call C++ from squirrel
+## Calling C++ from squirrel
 
 ```test.nut
 function baz() {
