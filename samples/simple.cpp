@@ -4,7 +4,7 @@
 int main() {
     try {
         squall::VMStd vm;
-        vm.dofile("test.nut");
+        vm.dofile("simple.nut");
 
         int n0 = vm.call<int>("foo0");
         std::cout << "**** return value: " << n0 << std::endl;

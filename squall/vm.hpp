@@ -59,50 +59,47 @@ template <class T> T fetch(HSQUIRRELVM vm, SQInteger index) {
     return T();
 }
 
-template <> int fetch<int>(HSQUIRRELVM vm, SQInteger index) {
-    if (sq_gettype(vm, index) != OT_INTEGER) {
-        throw squirrel_error("return value must be integer");
+inline
+void check_argument_type(
+    HSQUIRRELVM vm, SQInteger index, SQObjectType t, const char* tn) {
+    if (sq_gettype(vm, index) != t) {
+        throw squirrel_error(
+            std::string("return value must be ") + tn);
     }
+}
+
+template <> int fetch<int>(HSQUIRRELVM vm, SQInteger index) {
+    check_argument_type(vm, index, OT_INTEGER, "integer");
     SQInteger r;
     sq_getinteger(vm, index, &r);
     return r;
 }
 template <> float fetch<float>(HSQUIRRELVM vm, SQInteger index) {
-    if (sq_gettype(vm, index) != OT_FLOAT) {
-        throw squirrel_error("return value must be float");
-    }
+    check_argument_type(vm, index, OT_FLOAT, "float");
     SQFloat r;
     sq_getfloat(vm, index, &r);
     return r;
 }
 template <> bool fetch<bool>(HSQUIRRELVM vm, SQInteger index) {
-    if (sq_gettype(vm, index) != OT_BOOL) {
-        throw squirrel_error("return value must be bool");
-    }
+    check_argument_type(vm, index, OT_BOOL, "bool");
     SQBool r;
     sq_getbool(vm, index, &r);
     return r;
 }
 template <> const char* fetch<const char*>(HSQUIRRELVM vm, SQInteger index) {
-    if (sq_gettype(vm, index) != OT_STRING) {
-        throw squirrel_error("return value must be string");
-    }
+    check_argument_type(vm, index, OT_STRING, "string");
     const SQChar* r;
     sq_getstring(vm, index, &r);
     return r;
 }
 template <> std::string fetch<std::string>(HSQUIRRELVM vm, SQInteger index) {
-    if (sq_gettype(vm, index) != OT_STRING) {
-        throw squirrel_error("return value must be string");
-    }
+    check_argument_type(vm, index, OT_STRING, "string");
     const SQChar* r;
     sq_getstring(vm, index, &r);
     return std::string(r);
 }
 template <> void* fetch<void*>(HSQUIRRELVM vm, SQInteger index) {
-    if (sq_gettype(vm, index) != OT_USERPOINTER) {
-        throw squirrel_error("return value must be userpointer");
-    }
+    check_argument_type(vm, index, OT_USERPOINTER, "userpointer");
     SQUserPointer r;
     sq_getuserpointer(vm, index, &r);
     return r;
@@ -153,29 +150,24 @@ R call(HSQUIRRELVM vm, const char* name, T... args) {
 ////////////////////////////////////////////////////////////////
 // defun
 template <class R>
-void defun_return(HSQUIRRELVM vm, R r) {
-    push<R>(vm, r);
-}
-
-template <class R>
-int defun_aux(HSQUIRRELVM vm, std::function<R ()> f, int index) {
-    defun_return(vm, f());
+int stub_aux(HSQUIRRELVM vm, std::function<R ()> f, int index) {
+    push<R>(vm, f());
     return 1;
 }
 
 template <>
-int defun_aux<void>(HSQUIRRELVM vm, std::function<void ()> f, int index) {
+int stub_aux<void>(HSQUIRRELVM vm, std::function<void ()> f, int index) {
     f();
     return 0;
 }
 
 template <class R, class... T>
-int defun_aux(HSQUIRRELVM vm, std::function<R (int, T...)> f, int index) {
+int stub_aux(HSQUIRRELVM vm, std::function<R (int, T...)> f, int index) {
     SQInteger arg;
     sq_getinteger(vm, index, &arg);
 
     std::function<R (T...)> newf = partial(f, arg);
-    return defun_aux(vm, newf, index + 1);
+    return stub_aux(vm, newf, index + 1);
 }
 
 /*
@@ -193,13 +185,14 @@ SQInteger stub(HSQUIRRELVM vm) {
     void* fp;
     sq_getuserpointer(vm, -1, &fp);
     const F& f = *((F*)fp);
-    return defun_aux(vm, f, 2);
+    return stub_aux(vm, f, 2);
 }
 
 template <class R, class... T>
-void defun(HSQUIRRELVM vm, const std::string& name, std::function<R (T...)> f) {
+void defun(
+    HSQUIRRELVM vm, const std::string& name, std::function<R (T...)> f) {
     static std::unordered_map<std::string, std::function<R (T...)> > m;
-    auto p = &(m[name] = f);
+    auto p = &(m[name] = f); // TODO: VMごとにする
     sq_pushroottable(vm);
     sq_pushstring(vm, name.c_str(), -1);
     sq_pushuserpointer(vm, p);
