@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include "make_function.hpp"
 #include "partial_apply.hpp"
+#include "is_dereferencable.hpp"
 
 namespace squall {
 
@@ -29,36 +30,45 @@ struct keeper {
 
 ////////////////////////////////////////////////////////////////
 // push
-template <class T> void push(HSQUIRRELVM vm, T v) {
-    assert(0);
-}
+template <class T>
+void push_aux(HSQUIRRELVM vm, T v, undereferencable_tag);
 
-template <> void push<int>(HSQUIRRELVM vm, int v) {
+template <>
+void push_aux<int>(HSQUIRRELVM vm, int v, undereferencable_tag) {
     sq_pushinteger(vm, v);
 }
-template <> void push<float>(HSQUIRRELVM vm, float v) {
+template <>
+void push_aux<float>(HSQUIRRELVM vm, float v, undereferencable_tag) {
     sq_pushfloat(vm, v);
 }
-template <> void push<bool>(HSQUIRRELVM vm, bool v) {
+template <>
+void push_aux<bool>(HSQUIRRELVM vm, bool v, undereferencable_tag) {
     sq_pushbool(vm, v ? SQTrue : SQFalse);
 }
-template <> void push<const char*>(HSQUIRRELVM vm, const char* v) {
+template <>
+void push_aux<const char*>(HSQUIRRELVM vm, const char* v, undereferencable_tag) {
     sq_pushstring(vm, v, -1);
 }
-template <> void push<const std::string&>(HSQUIRRELVM vm, const std::string& v) {
+template <>
+void push_aux<const std::string&>(HSQUIRRELVM vm, const std::string& v, undereferencable_tag) {
     sq_pushstring(vm, v.data(), v.length());
 }
-template <> void push<void*>(HSQUIRRELVM vm, void* v) {
+template <>
+void push_aux<void*>(HSQUIRRELVM vm, void* v, undereferencable_tag) {
     sq_pushuserpointer(vm, v);
+}
+
+template <class T>
+void push_aux(HSQUIRRELVM vm, T v, dereferencable_tag) {
+    sq_pushuserpointer(vm, &*v);
+}
+
+template <class T> void push(HSQUIRRELVM vm, T v) {
+    push_aux(vm, v, typename is_dereferencable<T>::tag());
 }
 
 ////////////////////////////////////////////////////////////////
 // fetch
-template <class T> T fetch(HSQUIRRELVM vm, SQInteger index) {
-    assert(0);
-    return T();
-}
-
 inline
 void check_argument_type(
     HSQUIRRELVM vm, SQInteger index, SQObjectType t, const char* tn) {
@@ -68,41 +78,65 @@ void check_argument_type(
     }
 }
 
-template <> int fetch<int>(HSQUIRRELVM vm, SQInteger index) {
+template <class T>
+T fetch_aux(HSQUIRRELVM vm, SQInteger index, undereferencable_tag);
+
+template <>
+int fetch_aux<int>(HSQUIRRELVM vm, SQInteger index, undereferencable_tag) {
     check_argument_type(vm, index, OT_INTEGER, "integer");
     SQInteger r;
     sq_getinteger(vm, index, &r);
     return r;
 }
-template <> float fetch<float>(HSQUIRRELVM vm, SQInteger index) {
+template <>
+float fetch_aux<float>(HSQUIRRELVM vm, SQInteger index, undereferencable_tag) {
     check_argument_type(vm, index, OT_FLOAT, "float");
     SQFloat r;
     sq_getfloat(vm, index, &r);
     return r;
 }
-template <> bool fetch<bool>(HSQUIRRELVM vm, SQInteger index) {
+template <>
+bool fetch_aux<bool>(HSQUIRRELVM vm, SQInteger index, undereferencable_tag) {
     check_argument_type(vm, index, OT_BOOL, "bool");
     SQBool r;
     sq_getbool(vm, index, &r);
     return r;
 }
-template <> const char* fetch<const char*>(HSQUIRRELVM vm, SQInteger index) {
+template <>
+const char* fetch_aux<const char*>(
+    HSQUIRRELVM vm, SQInteger index, undereferencable_tag) {
     check_argument_type(vm, index, OT_STRING, "string");
     const SQChar* r;
     sq_getstring(vm, index, &r);
     return r;
 }
-template <> std::string fetch<std::string>(HSQUIRRELVM vm, SQInteger index) {
+template <>
+std::string fetch_aux<std::string>(
+    HSQUIRRELVM vm, SQInteger index, undereferencable_tag) {
     check_argument_type(vm, index, OT_STRING, "string");
     const SQChar* r;
     sq_getstring(vm, index, &r);
     return std::string(r);
 }
-template <> void* fetch<void*>(HSQUIRRELVM vm, SQInteger index) {
+template <>
+void* fetch_aux<void*>(HSQUIRRELVM vm, SQInteger index, undereferencable_tag) {
     check_argument_type(vm, index, OT_USERPOINTER, "userpointer");
     SQUserPointer r;
     sq_getuserpointer(vm, index, &r);
     return r;
+}
+
+template <class T>
+T fetch_aux(HSQUIRRELVM vm, SQInteger index, dereferencable_tag) {
+    check_argument_type(vm, index, OT_USERPOINTER, "userpointer");
+    SQUserPointer r;
+    sq_getuserpointer(vm, index, &r);
+    return static_cast<T>(r); // TODO: support smart pointer
+}
+
+template <class T>
+T fetch(HSQUIRRELVM vm, SQInteger index) {
+    return fetch_aux<T>(vm, index, typename is_dereferencable<T>::tag());
 }
 
 ////////////////////////////////////////////////////////////////
@@ -150,23 +184,20 @@ R call(HSQUIRRELVM vm, const char* name, T... args) {
 ////////////////////////////////////////////////////////////////
 // defun
 template <class R>
-int stub_aux(HSQUIRRELVM vm, std::function<R ()> f, int index) {
+int stub_aux(HSQUIRRELVM vm, std::function<R ()> f, SQInteger index) {
     push<R>(vm, f());
     return 1;
 }
 
 template <>
-int stub_aux<void>(HSQUIRRELVM vm, std::function<void ()> f, int index) {
+int stub_aux<void>(HSQUIRRELVM vm, std::function<void ()> f, SQInteger index) {
     f();
     return 0;
 }
 
-template <class R, class... T>
-int stub_aux(HSQUIRRELVM vm, std::function<R (int, T...)> f, int index) {
-    SQInteger arg;
-    sq_getinteger(vm, index, &arg);
-
-    std::function<R (T...)> newf = partial(f, arg);
+template <class R, class H, class... T>
+int stub_aux(HSQUIRRELVM vm, std::function<R (H, T...)> f, SQInteger index) {
+    std::function<R (T...)> newf = partial(f, fetch<H>(vm, index));
     return stub_aux(vm, newf, index + 1);
 }
 
