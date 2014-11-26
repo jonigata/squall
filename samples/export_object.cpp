@@ -1,5 +1,6 @@
 #include "../squall/vmstd.hpp"
 #include <cstdio>
+#include <memory>
 
 struct Foo {
     int foo() {
@@ -14,12 +15,19 @@ int main() {
         squall::VMStd vm;
         vm.dofile("export_object.nut");
 
-        vm.defun("bar", [=](Foo* x)->void {
+        vm.defun("baz_back", [=](Foo* x)->void {
                 std::cout << "**** lambda: " << x->foo() << std::endl;
             });
 
         Foo foo;
         vm.call<void>("baz", &foo);
+
+        vm.defun("zot_back", [=](std::shared_ptr<Foo> x)->void {
+                std::cout << "**** lambda: " << x->foo() << std::endl;
+            });
+
+        auto foo2 = std::make_shared<Foo>();
+        vm.call<void>("zot", foo2);
     }
     catch(squall::squirrel_error& e) {
         std::cerr << e.what() << std::endl;
