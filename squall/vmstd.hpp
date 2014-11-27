@@ -1,5 +1,5 @@
-#ifndef VMSTD_HPP_
-#define VMSTD_HPP_
+#ifndef SQUALL_VMSTD_HPP_
+#define SQUALL_VMSTD_HPP_
 
 #include <squirrel.h>
 #include <sqstdio.h>
@@ -40,4 +40,4 @@ private:
 
 }
 
-#endif // VMSTD_HPP_
+#endif // SQUALL_VMSTD_HPP_

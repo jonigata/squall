@@ -1,6 +1,9 @@
 #include "../squall/vmstd.hpp"
 #include <cstdio>
 
+void foo(int) {
+}
+
 int main() {
     try {
         squall::VMStd vm;
@@ -11,6 +14,8 @@ int main() {
 
         int n1 = vm.call<int>("foo1", 7);
         std::cout << "**** return value: " << n1 << std::endl;
+
+        vm.defun("foo", &foo);
 
         vm.defun("bar", [=](int x)->int {
                 std::cout << "**** lambda: " << x << std::endl;

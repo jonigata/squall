@@ -7,8 +7,8 @@
 	<説明>
 */
 
-#ifndef PARTIAL_APPLY_HPP_
-#define PARTIAL_APPLY_HPP_
+#ifndef SQUALL_PARTIAL_APPLY_HPP_
+#define SQUALL_PARTIAL_APPLY_HPP_
 
 #include <utility>
 
@@ -65,4 +65,4 @@ constexpr auto partial(F&& f, A&& a, B&& b, C&& ...c)
 
 }
 
-#endif // PARTIAL_APPLY_HPP_
+#endif // SQUALL_PARTIAL_APPLY_HPP_

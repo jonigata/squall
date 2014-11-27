@@ -7,31 +7,45 @@ namespace squall {
 
 namespace detail {
 
-template <typename Function>
+template <typename F>
+struct callable_traits;
+
+template <class T, class C, class... A>
+struct callable_traits<T (C::*)(A...)> {
+    using type = T(A...);
+};
+
+template <class T, class C, class... A>
+struct callable_traits<T (C::*)(A...) const> {
+    using type = T(A...);
+};
+ 
+template <typename F>
 struct function_traits
-    : public function_traits<decltype(&Function::operator())> {
+    : public callable_traits<decltype(&F::operator())> {
 };
 
-template <typename ClassType, typename ReturnType, typename... Args>
-struct function_traits<ReturnType(ClassType::*)(Args...) const> {
-    typedef ReturnType (*pointer)(Args...);
-    typedef std::function<ReturnType(Args...)> function;
+template <class T, class C, class... A>
+struct function_traits<T (C::*)(A...)> {
+    using type = T(C*, A...);
+};
+
+template <class T, class C, class... A>
+struct function_traits<T (C::*)(A...) const> {
+    using type = T(const C*, A...);
+};
+ 
+template <class T, class... A>
+struct function_traits<T (*)(A...)> {
+    using type = T (A...);
 };
 
 }
 
-template <typename Function>
-typename detail::function_traits<Function>::pointer
-to_function_pointer (Function& lambda) {
-    return static_cast<typename detail::function_traits<Function>::pointer>(
-        lambda);
-}
-
-template <typename Function>
-typename detail::function_traits<Function>::function
-to_function (Function& lambda) {
-    return static_cast<typename detail::function_traits<Function>::function>(
-        lambda);
+template <class F>
+std::function<typename detail::function_traits<F>::type>
+to_function(F f) {
+    return std::function<typename detail::function_traits<F>::type>(f);
 }
 
 }

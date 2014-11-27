@@ -1,5 +1,5 @@
-#ifndef ANY_HPP_
-#define ANY_HPP_
+#ifndef SQUALL_ANY_HPP_
+#define SQUALL_ANY_HPP_
 
 #include <memory>
 
@@ -43,4 +43,4 @@ private:
 
 }
 
-#endif // ANY_HPP_
+#endif // SQUALL_ANY_HPP_

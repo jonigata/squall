@@ -1,5 +1,5 @@
-#ifndef IS_DEREFERENCABLE_HPP_
-#define IS_DEREFERENCABLE_HPP_
+#ifndef SQUALL_IS_DEREFERENCABLE_HPP_
+#define SQUALL_IS_DEREFERENCABLE_HPP_
 
 #include <utility>
 
@@ -31,4 +31,4 @@ struct is_dereferencable<T, typename detail::ignore<decltype(*std::declval<T>())
 
 }
 
-#endif // IS_DEREFERENCABLE_HPP_
+#endif // SQUALL_IS_DEREFERENCABLE_HPP_
