@@ -4,7 +4,7 @@
 #include <functional>
 
 #include "squall_vm.hpp"
-#include "squall_call_and_defun.hpp"
+#include "squall_defun.hpp"
 
 namespace squall {
 

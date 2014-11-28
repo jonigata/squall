@@ -6,7 +6,8 @@
 #include "squall_klass_table.hpp"
 #include "squall_exception.hpp"
 #include "squall_stack_operation.hpp"
-#include "squall_call_and_defun.hpp"
+#include "squall_call.hpp"
+#include "squall_defun.hpp"
 #include "squall_make_function.hpp"
 
 namespace squall {

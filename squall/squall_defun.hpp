@@ -1,60 +1,16 @@
-#ifndef SQUALL_CALL_AND_DEFUN_HPP_
-#define SQUALL_CALL_AND_DEFUN_HPP_
+#ifndef SQUALL_DEFUN_HPP_
+#define SQUALL_DEFUN_HPP_
 
 #include <squirrel.h>
 #include "squall_stack_operation.hpp"
 #include "squall_partial_apply.hpp"
 
 //#include "squall_demangle.hpp"
+#include <iostream>
 
 namespace squall {
 
 namespace detail {
-
-////////////////////////////////////////////////////////////////
-// call
-inline
-void call_setup(HSQUIRRELVM vm, KlassTable&, int index) {
-}
-
-template <class V, class... T> inline
-void call_setup(
-    HSQUIRRELVM vm, KlassTable& klass_table,
-    int index, V head, T... tail) {
-
-    push<V>(vm, klass_table, head);
-    call_setup(vm, klass_table, index+1, tail...);
-}
-
-template <class R> inline
-R call_teardown(HSQUIRRELVM vm, KlassTable& klass_table) {
-    return fetch<R>(vm, klass_table, -1);
-}
-
-template <> inline
-void call_teardown<void>(HSQUIRRELVM vm, KlassTable& klass_table) {
-}
-
-template <class R, class... T> inline
-R call(HSQUIRRELVM vm, KlassTable& klass_table, const char* name, T... args) {
-    keeper k(vm);
-
-    sq_pushroottable(vm);
-    sq_pushstring(vm, name, -1);
-    if (!SQ_SUCCEEDED(sq_get(vm, -2))) {
-        throw squirrel_error(
-            std::string("can't find such function: ") + name);
-    }
-
-    sq_remove(vm, -2);
-    sq_pushroottable(vm);
-    call_setup(vm, klass_table, 0, args...);
-    if (!SQ_SUCCEEDED(sq_call(vm, sizeof...(args)+1, SQTrue, SQTrue))) {
-        throw squirrel_error(std::string("function call failed: ") + name);
-    }
-
-    return call_teardown<R>(vm, klass_table);
-}
 
 ////////////////////////////////////////////////////////////////
 // defun
@@ -117,16 +73,43 @@ SQInteger stub(HSQUIRRELVM vm) {
     }
 }
 
+template <class T> char typemask() { return '.'; }
+
+template <> char typemask<decltype(nullptr)>() { return 'o'; }
+template <> char typemask<int>() { return 'i'; }
+template <> char typemask<float>() { return 'f'; }
+template <> char typemask<bool>() { return 'b'; }
+template <> char typemask<const char*>() { return 's'; }
+template <> char typemask<std::string>() { return 's'; }
+
+template <class... T>
+struct TypeMaskList;
+
+template <>
+struct TypeMaskList<> {
+    static std::string doit() { return ""; }
+};
+
+template <class H, class... T>
+struct TypeMaskList<H, T...> {
+    static std::string doit() {
+        return typemask<H>() + TypeMaskList<T...>::doit();
+    }
+};
+
 template <int Offset, class R, class... T>
 void defun(
-    HSQUIRRELVM vm, KlassTable& klass_table,
-    const std::string& name, const std::function<R (T...)>& f) {
+    HSQUIRRELVM vm,
+    KlassTable& klass_table,
+    const std::string& name,
+    const std::function<R (T...)>& f,
+    const std::string& argtypemask) {
 
     sq_pushstring(vm, name.c_str(), -1);
     construct_object(vm, f);
     sq_pushuserpointer(vm, &klass_table);
     sq_newclosure(vm, stub<Offset, std::function<R (T...)>>, 2);
-    //sq_setparamscheck(vm, 0);
+    sq_setparamscheck(vm, SQ_MATCHTYPEMASKSTRING, argtypemask.c_str());
     sq_setnativeclosurename(vm, -1, name.c_str());
     sq_newslot(vm, -3, SQFalse);
 }
@@ -137,7 +120,7 @@ void defun_global(
     const std::string& name, const std::function<R (T...)>& f) {
 
     sq_pushroottable(vm);
-    defun<2>(vm, klass_table, name, f);
+    defun<2>(vm, klass_table, name, f, "." + TypeMaskList<T...>::doit());
     sq_pop(vm, 1);
 }
 
@@ -147,7 +130,7 @@ void defun_local(
     const std::string& name, const std::function<R (T...)>& f) {
 
     sq_pushobject(vm, klass_object);
-    defun<1>(vm, klass_table, name, f);
+    defun<1>(vm, klass_table, name, f, TypeMaskList<T...>::doit());
     sq_pop(vm, 1);
 }
 
@@ -155,4 +138,4 @@ void defun_local(
 
 }
 
-#endif // SQUALL_CALL_AND_DEFUN_HPP_
+#endif // SQUALL_DEFUN_HPP_
