@@ -26,9 +26,9 @@ void construct_object(HSQUIRRELVM vm, const T& v) {
 ////////////////////////////////////////////////////////////////
 // push
 template <class T> inline
-void push_aux(HSQUIRRELVM vm, KlassTable& klass_table, T v) {
+void push_aux(HSQUIRRELVM vm, T v) {
     HSQOBJECT sqo;
-    if (klass_table.find_klass_object<T>(sqo)) {
+    if (klass_table(vm).find_klass_object<T>(sqo)) {
         sq_pushobject(vm, sqo);
         sq_createinstance(vm, -1);
         sq_remove(vm, -2);
@@ -49,9 +49,9 @@ void push_aux(HSQUIRRELVM vm, KlassTable& klass_table, T v) {
     }
 }
 template <class T> inline
-void push_aux(HSQUIRRELVM vm, KlassTable& klass_table, T* v) {
+void push_aux(HSQUIRRELVM vm, T* v) {
     HSQOBJECT sqo;
-    if (klass_table.find_klass_object<T>(sqo)) {
+    if (klass_table(vm).find_klass_object<T>(sqo)) {
         sq_pushobject(vm, sqo);
         sq_createinstance(vm, -1);
         sq_setinstanceup(vm, -1, v);
@@ -62,29 +62,29 @@ void push_aux(HSQUIRRELVM vm, KlassTable& klass_table, T* v) {
 }
 
 template <> inline
-void push_aux<int>(HSQUIRRELVM vm, KlassTable& klass_table, int v) {
+void push_aux<int>(HSQUIRRELVM vm, int v) {
     sq_pushinteger(vm, v);
 }
 template <> inline
-void push_aux<float>(HSQUIRRELVM vm, KlassTable& klass_table, float v) {
+void push_aux<float>(HSQUIRRELVM vm, float v) {
     sq_pushfloat(vm, v);
 }
 template <> inline
-void push_aux<bool>(HSQUIRRELVM vm, KlassTable& klass_table, bool v) {
+void push_aux<bool>(HSQUIRRELVM vm, bool v) {
     sq_pushbool(vm, v ? SQTrue : SQFalse);
 }
 template <> inline
-void push_aux<const char*>(HSQUIRRELVM vm, KlassTable& klass_table, const char* v) {
+void push_aux<const char*>(HSQUIRRELVM vm, const char* v) {
     sq_pushstring(vm, v, -1);
 }
 template <> inline
-void push_aux<const std::string&>(HSQUIRRELVM vm, KlassTable& klass_table, const std::string& v) {
+void push_aux<const std::string&>(HSQUIRRELVM vm, const std::string& v) {
     sq_pushstring(vm, v.data(), v.length());
 }
 
 template <class T> inline
-void push(HSQUIRRELVM vm, KlassTable& klass_table, const T& v) {
-    push_aux(vm, klass_table, v);
+void push(HSQUIRRELVM vm, const T& v) {
+    push_aux(vm, v);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -110,8 +110,7 @@ T getdata(
 template <class T>
 struct Fetch {
 public:
-    static T doit(
-        HSQUIRRELVM vm, KlassTable& klass_table, SQInteger index) {
+    static T doit(HSQUIRRELVM vm, SQInteger index) {
         check_argument_type(vm, index, OT_USERDATA, "userdata");
         SQUserPointer r;
         sq_getuserdata(vm, index, &r, NULL);
@@ -121,11 +120,10 @@ public:
 
 template <class T>
 struct Fetch<T*> {
-    static T* doit(
-        HSQUIRRELVM vm, KlassTable& klass_table, SQInteger index) {
+    static T* doit(HSQUIRRELVM vm, SQInteger index) {
 
         HSQOBJECT sqo;
-        if (klass_table.find_klass_object<T>(sqo)) {
+        if (klass_table(vm).find_klass_object<T>(sqo)) {
             SQUserPointer r;
             sq_getinstanceup(vm, index, &r, NULL);
             return (T*)r;
@@ -138,8 +136,7 @@ struct Fetch<T*> {
 
 template <>
 struct Fetch<int> {
-    static int doit(
-        HSQUIRRELVM vm, KlassTable& klass_table, SQInteger index) {
+    static int doit(HSQUIRRELVM vm, SQInteger index) {
         return getdata<SQInteger>(
             vm, index, OT_INTEGER, "integer", sq_getinteger);
     }
@@ -147,8 +144,7 @@ struct Fetch<int> {
 
 template <>
 struct Fetch<float> {
-    static float doit(
-        HSQUIRRELVM vm, KlassTable& klass_table, SQInteger index) {
+    static float doit(HSQUIRRELVM vm, SQInteger index) {
         return getdata<SQFloat>(
             vm, index, OT_FLOAT, "float", sq_getfloat);
     }
@@ -156,8 +152,7 @@ struct Fetch<float> {
 
 template <>
 struct Fetch<bool> {
-    static bool doit(
-        HSQUIRRELVM vm, KlassTable& klass_table, SQInteger index) {
+    static bool doit(HSQUIRRELVM vm, SQInteger index) {
         return getdata<SQBool>(
             vm, index, OT_BOOL, "bool", sq_getbool);
     }
@@ -165,8 +160,7 @@ struct Fetch<bool> {
 
 template <>
 struct Fetch<std::string> {
-    static std::string doit(
-        HSQUIRRELVM vm, KlassTable& klass_table, SQInteger index) {
+    static std::string doit(HSQUIRRELVM vm, SQInteger index) {
         return getdata<const SQChar*>(
             vm, index, OT_STRING, "string", sq_getstring);
     }
@@ -178,9 +172,8 @@ struct Fetch<const std::string> : public Fetch<std::string> {
 
 template <class T>
 typename std::remove_reference<T>::type
-fetch(HSQUIRRELVM vm, KlassTable& klass_table, SQInteger index) {
-    return Fetch<typename std::remove_reference<T>::type>::doit(
-        vm, klass_table, index);
+fetch(HSQUIRRELVM vm, SQInteger index) {
+    return Fetch<typename std::remove_reference<T>::type>::doit(vm, index);
 }
 
 }

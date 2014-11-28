@@ -31,7 +31,6 @@ public:
     Klass<C>& func(const std::string& name, F f) {
         detail::defun_local(
             vm_.handle(),
-            vm_.klass_table(),
             imp_.lock()->get_klass_object(),
             name,
             to_function(f));

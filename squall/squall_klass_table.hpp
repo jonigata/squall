@@ -97,6 +97,11 @@ private:
 
 };
 
+inline
+KlassTable& klass_table(HSQUIRRELVM vm) {
+    return *((KlassTable*)sq_getforeignptr(vm));
+}
+
 }
 
 #endif // SQUALL_KLASS_TABLE_HPP_

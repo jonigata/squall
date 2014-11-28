@@ -16,17 +16,15 @@ namespace detail {
 // defun
 template <class R> inline
 int stub_aux(
-    HSQUIRRELVM vm, KlassTable& klass_table,
-    const std::function<R ()>& f, SQInteger index) {
+    HSQUIRRELVM vm, const std::function<R ()>& f, SQInteger index) {
 
-    push<R>(vm, klass_table, f());
+    push<R>(vm, f());
     return 1;
 }
 
 template <> inline
 int stub_aux<void>(
-    HSQUIRRELVM vm, KlassTable&,
-    const std::function<void ()>& f, SQInteger index) {
+    HSQUIRRELVM vm, const std::function<void ()>& f, SQInteger index) {
 
     f();
     return 0;
@@ -34,12 +32,10 @@ int stub_aux<void>(
 
 template <class R, class H, class... T> inline
 int stub_aux(
-    HSQUIRRELVM vm, KlassTable& klass_table,
-    const std::function<R (H, T...)>& f, SQInteger index) {
+    HSQUIRRELVM vm, const std::function<R (H, T...)>& f, SQInteger index) {
 
-    std::function<R (T...)> newf =
-        partial(f, fetch<H>(vm, klass_table, index));
-    return stub_aux(vm, klass_table, newf, index + 1);
+    std::function<R (T...)> newf = partial(f, fetch<H>(vm, index));
+    return stub_aux(vm, newf, index + 1);
 }
 
 /*
@@ -59,12 +55,8 @@ SQInteger stub(HSQUIRRELVM vm) {
         if(!SQ_SUCCEEDED(sq_getuserdata(vm, -1, &fp, NULL))) { assert(0); }
         const F& f = **((F**)fp);
 
-        SQUserPointer cp;
-        if(!SQ_SUCCEEDED(sq_getuserpointer(vm, -2, &cp))) { assert(0); }
-        KlassTable& klass_table = *((KlassTable*)cp);
-    
         //return stub_aux(klass_table, f, Offset);
-        SQInteger x = stub_aux(vm, klass_table, f, Offset);
+        SQInteger x = stub_aux(vm, f, Offset);
         return x;
     }
     catch(std::exception& e) {
@@ -100,15 +92,13 @@ struct TypeMaskList<H, T...> {
 template <int Offset, class R, class... T>
 void defun(
     HSQUIRRELVM vm,
-    KlassTable& klass_table,
     const std::string& name,
     const std::function<R (T...)>& f,
     const std::string& argtypemask) {
 
     sq_pushstring(vm, name.c_str(), -1);
     construct_object(vm, f);
-    sq_pushuserpointer(vm, &klass_table);
-    sq_newclosure(vm, stub<Offset, std::function<R (T...)>>, 2);
+    sq_newclosure(vm, stub<Offset, std::function<R (T...)>>, 1);
     sq_setparamscheck(vm, SQ_MATCHTYPEMASKSTRING, argtypemask.c_str());
     sq_setnativeclosurename(vm, -1, name.c_str());
     sq_newslot(vm, -3, SQFalse);
@@ -116,21 +106,21 @@ void defun(
 
 template <class R, class... T>
 void defun_global(
-    HSQUIRRELVM vm, KlassTable& klass_table,
+    HSQUIRRELVM vm, 
     const std::string& name, const std::function<R (T...)>& f) {
 
     sq_pushroottable(vm);
-    defun<2>(vm, klass_table, name, f, "." + TypeMaskList<T...>::doit());
+    defun<2>(vm, name, f, "." + TypeMaskList<T...>::doit());
     sq_pop(vm, 1);
 }
 
 template <class R, class... T>
 void defun_local(
-    HSQUIRRELVM vm, KlassTable& klass_table, const HSQOBJECT& klass_object,
+    HSQUIRRELVM vm, const HSQOBJECT& klass_object,
     const std::string& name, const std::function<R (T...)>& f) {
 
     sq_pushobject(vm, klass_object);
-    defun<1>(vm, klass_table, name, f, TypeMaskList<T...>::doit());
+    defun<1>(vm, name, f, TypeMaskList<T...>::doit());
     sq_pop(vm, 1);
 }
 
