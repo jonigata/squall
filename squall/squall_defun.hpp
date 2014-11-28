@@ -106,10 +106,11 @@ void defun(
 
 template <class R, class... T>
 void defun_global(
-    HSQUIRRELVM vm, 
+    HSQUIRRELVM vm, const HSQOBJECT& table,
     const std::string& name, const std::function<R (T...)>& f) {
 
-    sq_pushroottable(vm);
+    //sq_pushroottable(vm);
+    sq_pushobject(vm, table);
     defun<2>(vm, name, f, "." + TypeMaskList<T...>::doit());
     sq_pop(vm, 1);
 }
@@ -126,9 +127,11 @@ void defun_local(
 
 inline
 void defraw(
-    HSQUIRRELVM vm, const std::string& name, SQInteger (*f)(HSQUIRRELVM)) {
+    HSQUIRRELVM vm, const HSQOBJECT& table,
+    const std::string& name, SQInteger (*f)(HSQUIRRELVM)) {
     
-    sq_pushroottable(vm);
+    //sq_pushroottable(vm);
+    sq_pushobject(vm, table);
     sq_pushstring(vm, name.data(), name.length());
     sq_newclosure(vm, f, 0);
     sq_setnativeclosurename(vm, -1, name.c_str());

@@ -32,22 +32,28 @@ private:
 class VM {
 public:
     VM(int stack_size = 1024) : imp_(stack_size) {
-        sq_setforeignptr(handle(), &klass_table_);
+        HSQUIRRELVM vm = handle();
+        sq_setforeignptr(vm, &klass_table_);
+
+        // root table取得
+        sq_pushroottable(vm);
+        sq_getstackobj(vm, -1, &root_);
+        sq_pop(vm, -1);
     }
     ~VM() { sq_setforeignptr(handle(), 0); }
 
     template <class R, class... T>
     R call(const std::string& name, T... args) {
-        return detail::call<R>(handle(), name, args...);
+        return detail::call<R>(handle(), root_, name, args...);
     }
 
     template <class F>
     void defun(const std::string& name, F f) {
-        detail::defun_global(handle(), name, to_function(f));
+        detail::defun_global(handle(), root_, name, to_function(f));
     }
 
     void defraw(const std::string& s, SQInteger (*f)(HSQUIRRELVM)) {
-        detail::defraw(handle(), s, f);
+        detail::defraw(handle(), root_, s, f);
     }
 
     KlassTable& klass_table() { return klass_table_; }
@@ -55,6 +61,7 @@ public:
 
 private:
     detail::VMImp   imp_;
+    HSQOBJECT       root_;
     KlassTable      klass_table_;
     
 };

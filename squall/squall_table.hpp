@@ -47,6 +47,20 @@ public:
         return true;
     }
 
+    template <class R, class... T>
+    R call(const std::string& name, T... args) {
+        return detail::call<R>(vm_, tableobj_, name, args...);
+    }
+
+    template <class F>
+    void defun(const std::string& name, F f) {
+        detail::defun_global(vm_, tableobj_, name, to_function(f));
+    }
+
+    void defraw(const std::string& s, SQInteger (*f)(HSQUIRRELVM)) {
+        detail::defraw(vm_, tableobj_, s, f);
+    }
+
 private:
     HSQUIRRELVM vm_;
     HSQOBJECT   tableobj_;
