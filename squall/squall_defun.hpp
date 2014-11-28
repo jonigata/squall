@@ -134,6 +134,17 @@ void defun_local(
     sq_pop(vm, 1);
 }
 
+inline
+void defraw(HSQUIRRELVM vm, const char* name, SQInteger (*f)(HSQUIRRELVM)) {
+    
+    sq_pushroottable(vm);
+    sq_pushstring(vm, name, -1);
+    sq_newclosure(vm, f, 0);
+    sq_setnativeclosurename(vm, -1, name);
+    sq_newslot(vm, -3, SQFalse);
+    sq_pop(vm, 1);
+}
+
 }
 
 }

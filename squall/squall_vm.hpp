@@ -53,6 +53,14 @@ public:
         detail::defun_global(handle(), klass_table_, name, to_function(f));
     }
 
+    void defraw(const char* s, SQInteger (*f)(HSQUIRRELVM)) {
+        detail::defraw(handle(), s, f);
+    }
+
+    void defraw(const std::string& s, SQInteger (*f)(HSQUIRRELVM)) {
+        detail::defraw(handle(), s.c_str(), f);
+    }
+
     KlassTable& klass_table() { return klass_table_; }
     HSQUIRRELVM handle() { return imp_.handle(); }
 
