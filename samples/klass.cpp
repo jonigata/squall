@@ -1,5 +1,5 @@
-#include "../squall/vmstd.hpp"
-#include "../squall/klass.hpp"
+#include "../squall/squall_vmstd.hpp"
+#include "../squall/squall_klass.hpp"
 #include <cstdio>
 
 class Foo {
