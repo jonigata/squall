@@ -53,6 +53,7 @@ int main() {
     }
     catch(squall::squirrel_error& e) {
         std::cerr << e.what() << std::endl;
+        return 1;
     }
 
     return 0;
@@ -89,6 +90,7 @@ int main() {
     }
     catch(squall::squirrel_error& e) {
         std::cerr << e.what() << std::endl;
+        return 1;
     }
 
     return 0;
@@ -147,6 +149,7 @@ int main() {
     }
     catch(squall::squirrel_error& e) {
         std::cerr << e.what() << std::endl;
+        return 1;
     }
 
     return 0;

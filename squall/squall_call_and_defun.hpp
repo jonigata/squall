@@ -14,17 +14,16 @@ namespace detail {
 ////////////////////////////////////////////////////////////////
 // call
 inline
-int call_setup(HSQUIRRELVM vm, KlassTable&, int arity) {
-    return arity;
+void call_setup(HSQUIRRELVM vm, KlassTable&, int index) {
 }
 
 template <class V, class... T> inline
-int call_setup(
+void call_setup(
     HSQUIRRELVM vm, KlassTable& klass_table,
-    int arity, V head, T... tail) {
+    int index, V head, T... tail) {
 
     push<V>(vm, klass_table, head);
-    return call_setup(vm, klass_table, arity+1, tail...);
+    call_setup(vm, klass_table, index+1, tail...);
 }
 
 template <class R> inline
@@ -49,8 +48,8 @@ R call(HSQUIRRELVM vm, KlassTable& klass_table, const char* name, T... args) {
 
     sq_remove(vm, -2);
     sq_pushroottable(vm);
-    int arity = call_setup(vm, klass_table, 0, args...);
-    if (!SQ_SUCCEEDED(sq_call(vm, arity+1, SQTrue, SQTrue))) {
+    call_setup(vm, klass_table, 0, args...);
+    if (!SQ_SUCCEEDED(sq_call(vm, sizeof...(args)+1, SQTrue, SQTrue))) {
         throw squirrel_error(std::string("function call failed: ") + name);
     }
 
