@@ -1,4 +1,6 @@
 function zot(foo) {
-    foo.bar();
-    foo.baz("hello");
+  print("==== zot called\n");
+  //print(foo);
+  foo.bar();
+  foo.baz("hello");
 }

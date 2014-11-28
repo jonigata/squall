@@ -21,7 +21,7 @@ int main() {
                 std::cout << "**** lambda: " << x << std::endl;
                 return 7777;
             });
-        vm.call<void>("baz");
+        //vm.call<void>("baz");
         
         int n2 = vm.call<int>("baz");
         std::cout << "**** return value: " << n2 << std::endl;

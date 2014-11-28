@@ -1,11 +1,9 @@
 #ifndef SQUALL_VM_HPP_
 #define SQUALL_VM_HPP_
 
-#include <squirrel.h>
 #include <cassert>
 #include <functional>
-#include <unordered_map>
-#include <memory>
+#include "klass_table.hpp"
 #include "exception.hpp"
 #include "stack_operation.hpp"
 #include "call_and_defun.hpp"
@@ -17,14 +15,16 @@ namespace squall {
 
 namespace detail {
 
-////////////////////////////////////////////////////////////////
-// klass base
-class KlassImpBase {
+class VMImp { // for destruct order
 public:
-    virtual ~KlassImpBase() {}
+    VMImp(int stack_size = 1024) { vm_ = sq_open(stack_size); }
+    ~VMImp() {
+        sq_close(vm_);
+    }
+    HSQUIRRELVM handle() { return vm_; }
+private:
+    HSQUIRRELVM vm_;
 };
-
-typedef std::shared_ptr<KlassImpBase> klass_ptr;
 
 }
 
@@ -32,52 +32,34 @@ typedef std::shared_ptr<KlassImpBase> klass_ptr;
 // VM interface
 class VM {
 public:
-    VM(int stack_size = 1024) {
-        vm_ = sq_open(stack_size);
-    }
-    ~VM() { sq_close(vm_); }
+    VM(int stack_size = 1024) : imp_(stack_size){}
 
     template <class R, class... T>
     R call(const char* name, T... args) {
-        return detail::call<R>(vm_, name, args...);
+        return detail::call<R>(handle(), klass_table_, name, args...);
     }
 
     template <class R, class... T>
     R call(const std::string& name, T... args) {
-        return detail::call<R>(vm_, name.c_str(), args...);
+        return detail::call<R>(handle(), klass_table_, name.c_str(), args...);
     }
 
     template <class F>
     void defun(const char* name, F f) {
-        detail::defun_global(vm_, name, to_function(f));
+        defun(std::string(name), f);
     }
 
     template <class F>
     void defun(const std::string& name, F f) {
-        defun(name.c_str(), f);
+        detail::defun_global(handle(), klass_table_, name, to_function(f));
     }
 
-    void printtop(const char* s) {
-        printf("%s: %lld\n", s, sq_gettop(vm_));
-    }
-
-    template <class K>
-    std::shared_ptr<K> add_klass(const std::string& name) {
-        auto i = klasses_.find(name);
-        if (i == klasses_.end()) {
-            auto p = std::make_shared<K>(handle(), name.c_str());
-            klasses_[name] = p;
-            return p;
-        } else {
-            return std::dynamic_pointer_cast<K>((*i).second);
-        }
-    }
-
-    HSQUIRRELVM handle() { return vm_; }
+    KlassTable& klass_table() { return klass_table_; }
+    HSQUIRRELVM handle() { return imp_.handle(); }
 
 private:
-    HSQUIRRELVM vm_;
-    std::unordered_map<std::string, detail::klass_ptr> klasses_;
+    detail::VMImp   imp_;
+    KlassTable      klass_table_;
     
 };
 

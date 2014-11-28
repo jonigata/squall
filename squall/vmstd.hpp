@@ -21,7 +21,7 @@ public:
     }
 
     void dofile(const char* filename) {
-        detail::keeper k(handle());
+        keeper k(handle());
         sq_pushroottable(handle());
         if (!SQ_SUCCEEDED(sqstd_dofile(handle(), filename, 0, 1))) {
             throw squirrel_error("dofile failed");
