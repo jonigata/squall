@@ -1,6 +1,6 @@
 #include "../squall/squall_vmstd.hpp"
 #include "../squall/squall_klass.hpp"
-#include <cstdio>
+#include <iostream>
 
 class Foo {
 public:

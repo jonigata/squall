@@ -6,10 +6,7 @@
 #include <sqstdaux.h>
 
 #include "squall_vm.hpp"
-
-#include <stdio.h>
 #include <stdarg.h>
-#include <iostream>
 
 namespace squall {
 

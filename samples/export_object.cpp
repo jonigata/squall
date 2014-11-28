@@ -1,6 +1,5 @@
 #include "../squall/squall_vmstd.hpp"
-#include <cstdio>
-#include <memory>
+#include <iostream>
 
 struct Foo {
     int foo() {

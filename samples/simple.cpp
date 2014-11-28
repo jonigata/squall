@@ -1,5 +1,5 @@
 #include "../squall/squall_vmstd.hpp"
-#include <cstdio>
+#include <iostream>
 
 void foo(int) {
 }
