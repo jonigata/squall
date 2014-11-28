@@ -9,6 +9,7 @@
 #include "squall_call.hpp"
 #include "squall_defun.hpp"
 #include "squall_make_function.hpp"
+#include "squall_table_base.hpp"
 
 namespace squall {
 
@@ -39,30 +40,33 @@ public:
         sq_pushroottable(vm);
         sq_getstackobj(vm, -1, &root_);
         sq_pop(vm, -1);
+
+        root_table_.reset(new TableBase(vm, root_));
     }
     ~VM() { sq_setforeignptr(handle(), 0); }
 
     template <class R, class... T>
     R call(const std::string& name, T... args) {
-        return detail::call<R>(handle(), root_, name, args...);
+        return root_table_->call<R>(name, args...);
     }
 
     template <class F>
     void defun(const std::string& name, F f) {
-        detail::defun_global(handle(), root_, name, to_function(f));
+        root_table_->defun(name, f);
     }
 
     void defraw(const std::string& s, SQInteger (*f)(HSQUIRRELVM)) {
-        detail::defraw(handle(), root_, s, f);
+        root_table_->defraw(s, f);
     }
 
     KlassTable& klass_table() { return klass_table_; }
     HSQUIRRELVM handle() { return imp_.handle(); }
 
 private:
-    detail::VMImp   imp_;
-    HSQOBJECT       root_;
-    KlassTable      klass_table_;
+    detail::VMImp               imp_;
+    HSQOBJECT                   root_;
+    KlassTable                  klass_table_;
+    std::unique_ptr<TableBase>  root_table_;
     
 };
 
