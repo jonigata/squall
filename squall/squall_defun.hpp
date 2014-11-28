@@ -96,7 +96,7 @@ void defun(
     const std::function<R (T...)>& f,
     const std::string& argtypemask) {
 
-    sq_pushstring(vm, name.c_str(), -1);
+    sq_pushstring(vm, name.data(), name.length());
     construct_object(vm, f);
     sq_newclosure(vm, stub<Offset, std::function<R (T...)>>, 1);
     sq_setparamscheck(vm, SQ_MATCHTYPEMASKSTRING, argtypemask.c_str());
@@ -125,12 +125,13 @@ void defun_local(
 }
 
 inline
-void defraw(HSQUIRRELVM vm, const char* name, SQInteger (*f)(HSQUIRRELVM)) {
+void defraw(
+    HSQUIRRELVM vm, const std::string& name, SQInteger (*f)(HSQUIRRELVM)) {
     
     sq_pushroottable(vm);
-    sq_pushstring(vm, name, -1);
+    sq_pushstring(vm, name.data(), name.length());
     sq_newclosure(vm, f, 0);
-    sq_setnativeclosurename(vm, -1, name);
+    sq_setnativeclosurename(vm, -1, name.c_str());
     sq_newslot(vm, -3, SQFalse);
     sq_pop(vm, 1);
 }

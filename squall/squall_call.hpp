@@ -35,21 +35,20 @@ void call_teardown<void>(HSQUIRRELVM vm) {
 }
 
 template <class R, class... T> inline
-R call(HSQUIRRELVM vm, const char* name, T... args) {
+R call(HSQUIRRELVM vm, const std::string& name, T... args) {
     keeper k(vm);
 
     sq_pushroottable(vm);
-    sq_pushstring(vm, name, -1);
+    sq_pushstring(vm, name.data(), name.length());
     if (!SQ_SUCCEEDED(sq_get(vm, -2))) {
-        throw squirrel_error(
-            std::string("can't find such function: ") + name);
+        throw squirrel_error("can't find such function: " + name);
     }
 
     sq_remove(vm, -2);
     sq_pushroottable(vm);
     call_setup(vm, 0, args...);
     if (!SQ_SUCCEEDED(sq_call(vm, sizeof...(args)+1, SQTrue, SQTrue))) {
-        throw squirrel_error(std::string("function call failed: ") + name);
+        throw squirrel_error("function call failed: " + name);
     }
 
     return call_teardown<R>(vm);

@@ -37,18 +37,8 @@ public:
     ~VM() { sq_setforeignptr(handle(), 0); }
 
     template <class R, class... T>
-    R call(const char* name, T... args) {
-        return detail::call<R>(handle(), name, args...);
-    }
-
-    template <class R, class... T>
     R call(const std::string& name, T... args) {
-        return detail::call<R>(handle(), name.c_str(), args...);
-    }
-
-    template <class F>
-    void defun(const char* name, F f) {
-        defun(std::string(name), f);
+        return detail::call<R>(handle(), name, args...);
     }
 
     template <class F>
@@ -56,12 +46,8 @@ public:
         detail::defun_global(handle(), name, to_function(f));
     }
 
-    void defraw(const char* s, SQInteger (*f)(HSQUIRRELVM)) {
-        detail::defraw(handle(), s, f);
-    }
-
     void defraw(const std::string& s, SQInteger (*f)(HSQUIRRELVM)) {
-        detail::defraw(handle(), s.c_str(), f);
+        detail::defraw(handle(), s, f);
     }
 
     KlassTable& klass_table() { return klass_table_; }

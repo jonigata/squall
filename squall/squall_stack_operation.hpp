@@ -6,6 +6,8 @@
 #include <squirrel.h>
 #include "squall_exception.hpp"
 
+//#include "demangle.hpp"
+
 namespace squall {
 
 namespace detail {
@@ -74,17 +76,13 @@ void push_aux<bool>(HSQUIRRELVM vm, bool v) {
     sq_pushbool(vm, v ? SQTrue : SQFalse);
 }
 template <> inline
-void push_aux<const char*>(HSQUIRRELVM vm, const char* v) {
+void push_aux<string_wrapper>(HSQUIRRELVM vm, string_wrapper v) {
     sq_pushstring(vm, v, -1);
-}
-template <> inline
-void push_aux<const std::string&>(HSQUIRRELVM vm, const std::string& v) {
-    sq_pushstring(vm, v.data(), v.length());
 }
 
 template <class T> inline
 void push(HSQUIRRELVM vm, const T& v) {
-    push_aux(vm, v);
+    push_aux(vm, wrap_type(v));
 }
 
 ////////////////////////////////////////////////////////////////
@@ -159,21 +157,17 @@ struct Fetch<bool> {
 };
 
 template <>
-struct Fetch<std::string> {
+struct Fetch<string_wrapper> {
     static std::string doit(HSQUIRRELVM vm, SQInteger index) {
         return getdata<const SQChar*>(
             vm, index, OT_STRING, "string", sq_getstring);
     }
 };
 
-template <>
-struct Fetch<const std::string> : public Fetch<std::string> {
-};
-
 template <class T>
-typename std::remove_reference<T>::type
+typename wrapped_type<T>::value_type
 fetch(HSQUIRRELVM vm, SQInteger index) {
-    return Fetch<typename std::remove_reference<T>::type>::doit(vm, index);
+    return Fetch<typename wrapped_type<T>::wrapper_type>::doit(vm, index);
 }
 
 }
