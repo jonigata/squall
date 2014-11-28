@@ -2,10 +2,13 @@
 
 A squirrel C++11 binding
 
+License: Modified BSD
+
 ## To make VM but do nothing
 
+C++
 ```
-#include "squall/vm.hpp"
+#include "squall/squall_vm.hpp"
 
 int main() {
     squall::VM vm; // may throw squall::squirrel_error
@@ -15,8 +18,9 @@ int main() {
 
 ## To make VM with standard library but do nothing
 
+C++
 ```
-#include "squall/vmstd.hpp"
+#include "squall/squall_vmstd.hpp"
 
 int main() {
     squall::VMStd vm; // may throw squall::squirrel_error
@@ -26,6 +30,7 @@ int main() {
 
 ## To call squirrel function from C++
 
+Squirrel
 ```test.nut
 function foo() {
   print("==== foo0 called\n");
@@ -33,7 +38,11 @@ function foo() {
 }
 ```
 
+C++
 ```
+#include "squall/squall_vmstd.hpp"
+#include <iostream>
+
 int main() {
     try {
         squall::VMStd vm;
@@ -52,6 +61,7 @@ int main() {
 
 ## To call C++ function from squirrel
 
+Squirrel
 ```test.nut
 function baz() {
   print("==== baz called\n");
@@ -59,7 +69,11 @@ function baz() {
 }
 ```
 
+C++
 ```
+#include "squall/squall_vmstd.hpp"
+#include <iostream>
+
 int main() {
     try {
         squall::VMStd vm;
@@ -81,6 +95,62 @@ int main() {
 }
 ```
 
-## To call squirrel method from C++
+## To export C++ object and call member function
+
+Squirrel
+```
+function zot(foo) {
+  print("==== zot called\n");
+  //print(foo);
+  foo.bar();
+  foo.bar();
+  foo.bar();
+  foo.bar();
+  foo.bar();
+  foo.bar();
+  foo.baz("hello");
+}
+```
+
+C++
+```
+#include "squall/squall_vmstd.hpp"
+#include "squall/squall_klass.hpp"
+#include <iostream>
+
+class Foo {
+public:
+    Foo() : n_(0) {}
+    int n_;
+
+    void bar() {
+        n_++;
+        std::cerr << "**** bar called: " << n_ << std::endl;
+    }
+    int baz(const std::string& s) {
+        std::cerr << "**** baz called: " << s << std::endl;
+        return 4649;
+    }
+};
+
+int main() {
+    try {
+        squall::VMStd vm;
+        vm.dofile("klass.nut");
+
+        squall::Klass<Foo> k(vm, "Foo");
+        k.func("bar", &Foo::bar);
+        k.func("baz", &Foo::baz);
+
+        Foo foo;
+        vm.call<void>("zot", &foo);
+    }
+    catch(squall::squirrel_error& e) {
+        std::cerr << e.what() << std::endl;
+    }
+
+    return 0;
+}
+```
 
 In development

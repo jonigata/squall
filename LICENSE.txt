@@ -1,0 +1,3 @@
+Copyright (C) 2006-2014 Naoyuki HIRAYAMA.  
+
+This software is distributed under the Modified BSD License.

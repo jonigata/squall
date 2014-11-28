@@ -4,10 +4,12 @@
 
 class Foo {
 public:
-    Foo(){}
+    Foo() : n_(0) {}
+    int n_;
 
     void bar() {
-        std::cerr << "**** bar called" << std::endl;
+        n_++;
+        std::cerr << "**** bar called: " << n_ << std::endl;
     }
     int baz(const std::string& s) {
         std::cerr << "**** baz called: " << s << std::endl;
