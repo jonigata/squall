@@ -12,7 +12,7 @@ public:
     TableBase(HSQUIRRELVM vm, const HSQOBJECT& to) : vm_(vm), tableobj_(to) {}
 
     template <class T>
-    void set(const std::string& name, const T& v) {
+    void set(const string& name, const T& v) {
         sq_pushobject(vm_, tableobj_);
         sq_pushstring(vm_, name.data(), name.length());
         detail::push(vm_, v);
@@ -21,7 +21,7 @@ public:
     }
 
     template <class T>
-    T get(const std::string& name) {
+    T get(const string& name) {
         T r;
         if(get<T>(name, r)) {
             return r;
@@ -30,7 +30,7 @@ public:
     }
 
     template <class T>
-    bool get(const std::string& name, T& r) {
+    bool get(const string& name, T& r) {
         sq_pushobject(vm_, tableobj_);
         sq_pushstring(vm_, name.data(), name.length());
         if (!SQ_SUCCEEDED(sq_get(vm_, -2))) {
@@ -42,21 +42,21 @@ public:
     }
 
     template <class R, class... T>
-    R call(const std::string& name, T... args) {
+    R call(const string& name, T... args) {
         return detail::call<R>(vm_, tableobj_, name, args...);
     }
 
     template <class F>
-    void defun(const std::string& name, F f) {
+    void defun(const string& name, F f) {
         detail::defun_global(vm_, tableobj_, name, to_function(f));
     }
 
-    void defraw(const std::string& s, SQInteger (*f)(HSQUIRRELVM)) {
+    void defraw(const string& s, SQInteger (*f)(HSQUIRRELVM)) {
         detail::defraw(vm_, tableobj_, s, f);
     }
 
     template <class... T>
-    Coroutine co_call(const std::string& name, T... args) {
+    Coroutine co_call(const string& name, T... args) {
         SQInteger top = sq_gettop(handle());
         detail::call_setup(vm_, tableobj_, name, args...);
         return Coroutine(vm_, top);

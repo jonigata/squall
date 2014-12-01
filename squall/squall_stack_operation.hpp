@@ -158,7 +158,7 @@ struct Fetch<bool> {
 
 template <>
 struct Fetch<string_wrapper> {
-    static std::string doit(HSQUIRRELVM vm, SQInteger index) {
+    static string doit(HSQUIRRELVM vm, SQInteger index) {
         return getdata<const SQChar*>(
             vm, index, OT_STRING, "string", sq_getstring);
     }

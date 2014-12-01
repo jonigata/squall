@@ -47,21 +47,21 @@ public:
 
     template <class R, class... T>
 
-    R call(const std::string& name, T... args) {
+    R call(const string& name, T... args) {
         return root_table_->call<R>(name, args...);
     }
 
     template <class F>
-    void defun(const std::string& name, F f) {
+    void defun(const string& name, F f) {
         root_table_->defun(name, f);
     }
 
-    void defraw(const std::string& s, SQInteger (*f)(HSQUIRRELVM)) {
+    void defraw(const string& s, SQInteger (*f)(HSQUIRRELVM)) {
         root_table_->defraw(s, f);
     }
 
     template <class... T>
-    Coroutine co_call(const std::string& name, T... args) {
+    Coroutine co_call(const string& name, T... args) {
         return root_table_->co_call(name, args...);
     }
 

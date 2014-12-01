@@ -12,12 +12,12 @@ struct functor_traits;
 
 template <class T, class C, class... A>
 struct functor_traits<T (C::*)(A...)> {
-    using type = T(A...);
+    typedef T type(A...);
 };
 
 template <class T, class C, class... A>
 struct functor_traits<T (C::*)(A...) const> {
-    using type = T(A...);
+    typedef T type(A...);
 };
  
 template <typename F>
@@ -27,17 +27,17 @@ struct function_traits
 
 template <class T, class C, class... A>
 struct function_traits<T (C::*)(A...)> {
-    using type = T(C*, A...);
+    typedef T type(C*, A...);
 };
 
 template <class T, class C, class... A>
 struct function_traits<T (C::*)(A...) const> {
-    using type = T(const C*, A...);
+    typedef T type(const C*, A...);
 };
  
 template <class T, class... A>
 struct function_traits<T (*)(A...)> {
-    using type = T (A...);
+    typedef T type(A...);
 };
 
 }

@@ -1,12 +1,3 @@
-// 2014/11/25 Naoyuki Hirayama
-
-/*!
-	@file	  partial_apply.hpp
-	@brief	  <概要>
-
-	<説明>
-*/
-
 #ifndef SQUALL_PARTIAL_APPLY_HPP_
 #define SQUALL_PARTIAL_APPLY_HPP_
 
@@ -21,7 +12,7 @@ struct partial_application {
     F   f;
     Arg arg;
 
-    constexpr partial_application(F&& f, Arg&& arg)
+    partial_application(F&& f, Arg&& arg)
         : f(std::forward<F>(f)), arg(std::forward<Arg>(arg)) {
     }
 
@@ -30,7 +21,7 @@ struct partial_application {
      * supplied. PartialApplication otherwise has no idea whether f takes 1 or 10 args.
      */
     template <class... Args>
-    constexpr auto operator() (Args&& ...args) const
+    auto operator() (Args&& ...args) const
         -> decltype(f(arg, std::declval<Args>()...)) {
         return f(arg, std::forward<Args>(args)...);
     }
@@ -39,14 +30,14 @@ struct partial_application {
 }
 
 template <class F, class A>
-constexpr detail::partial_application<F,A> partial(F&& f, A&& a) {
+detail::partial_application<F,A> partial(F&& f, A&& a) {
     return detail::partial_application<F, A>(
         std::forward<F>(f), std::forward<A>(a));
 }
 
 /* Recursively apply for multiple arguments. */
 template <class F, class A, class B>
-constexpr auto partial(F&& f, A&& a, B&& b)
+auto partial(F&& f, A&& a, B&& b)
     -> decltype(partial(partial(std::declval<F>(), std::declval<A>()),
                         std::declval<B>())) {
     return partial(
@@ -55,7 +46,7 @@ constexpr auto partial(F&& f, A&& a, B&& b)
 
 /* Allow n-ary application. */
 template<class F, class A, class B, class... C>
-constexpr auto partial(F&& f, A&& a, B&& b, C&& ...c)
+auto partial(F&& f, A&& a, B&& b, C&& ...c)
     -> decltype(partial(partial(std::declval<F>(), std::declval<A>()),
                         std::declval<B>(), std::declval<C>()...)) {
     return partial(partial(std::forward<F>(f), std::forward<A>(a)),

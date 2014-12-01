@@ -72,19 +72,19 @@ template <> char typemask<int>() { return 'i'; }
 template <> char typemask<float>() { return 'f'; }
 template <> char typemask<bool>() { return 'b'; }
 template <> char typemask<const char*>() { return 's'; }
-template <> char typemask<std::string>() { return 's'; }
+template <> char typemask<string>() { return 's'; }
 
 template <class... T>
 struct TypeMaskList;
 
 template <>
 struct TypeMaskList<> {
-    static std::string doit() { return ""; }
+    static string doit() { return _SC(""); }
 };
 
 template <class H, class... T>
 struct TypeMaskList<H, T...> {
-    static std::string doit() {
+    static string doit() {
         return typemask<H>() + TypeMaskList<T...>::doit();
     }
 };
@@ -92,9 +92,9 @@ struct TypeMaskList<H, T...> {
 template <int Offset, class R, class... T>
 void defun(
     HSQUIRRELVM vm,
-    const std::string& name,
+    const string& name,
     const std::function<R (T...)>& f,
-    const std::string& argtypemask) {
+    const string& argtypemask) {
 
     sq_pushstring(vm, name.data(), name.length());
     construct_object(vm, f);
@@ -107,7 +107,7 @@ void defun(
 template <class R, class... T>
 void defun_global(
     HSQUIRRELVM vm, const HSQOBJECT& table,
-    const std::string& name, const std::function<R (T...)>& f) {
+    const string& name, const std::function<R (T...)>& f) {
 
     //sq_pushroottable(vm);
     sq_pushobject(vm, table);
@@ -118,7 +118,7 @@ void defun_global(
 template <class R, class... T>
 void defun_local(
     HSQUIRRELVM vm, const HSQOBJECT& klass_object,
-    const std::string& name, const std::function<R (T...)>& f) {
+    const string& name, const std::function<R (T...)>& f) {
 
     sq_pushobject(vm, klass_object);
     defun<1>(vm, name, f, TypeMaskList<T...>::doit());
@@ -128,7 +128,7 @@ void defun_local(
 inline
 void defraw(
     HSQUIRRELVM vm, const HSQOBJECT& table,
-    const std::string& name, SQInteger (*f)(HSQUIRRELVM)) {
+    const string& name, SQInteger (*f)(HSQUIRRELVM)) {
     
     //sq_pushroottable(vm);
     sq_pushobject(vm, table);
