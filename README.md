@@ -191,3 +191,57 @@ int main() {
 }
 ```
 
+## To use coroutine
+
+Squirrel
+```
+function foo() {
+  print("==== foo called\n");
+  local n = 4649;
+  n = suspend(n);
+  print("==== foo resumed\n");
+  n = suspend(n);
+  print("==== foo resumed\n");
+  n = suspend(n);
+  print("==== foo resumed\n");
+  return n;
+}
+```
+
+C++
+```
+#include "../squall/squall_vmstd.hpp"
+#include <iostream>
+
+void foo(int) {
+}
+
+int main() {
+    try {
+        squall::VMStd vm;
+        vm.dofile("coroutine.nut");
+
+        // You have better to make a scope because Coroutine dtor cleans up
+        // Squirrel stack. co.result<T>() has the same effect, but if you
+        // forget to call this, the stack might be completely broken.
+        // The ownership of this clean-up behavior is transferred through
+        // move semantics.
+        {
+            squall::Coroutine co = vm.co_call("foo");
+            while (co.suspended()) {
+                int n = co.yielded<int>();
+                std::cerr << "**** foo yielded: " << n << std::endl;
+                co.resume(n*2);
+            }
+            std::cerr << "**** foo result: " << co.result<int>() << std::endl;
+        }
+    }
+    catch(squall::squirrel_error& e) {
+        std::cerr << e.what() << std::endl;
+    }
+
+    return 0;
+}
+```
+
+

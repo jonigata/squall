@@ -15,14 +15,14 @@ namespace detail {
 ////////////////////////////////////////////////////////////////
 // call
 inline
-void call_setup(HSQUIRRELVM vm, int index) {
+void call_setup_arg(HSQUIRRELVM vm, int index) {
 }
 
 template <class V, class... T> inline
-void call_setup(HSQUIRRELVM vm, int index, V head, T... tail) {
+void call_setup_arg(HSQUIRRELVM vm, int index, V head, T... tail) {
 
     push<V>(vm, head);
-    call_setup(vm, index+1, tail...);
+    call_setup_arg(vm, index+1, tail...);
 }
 
 template <class R> inline
@@ -34,12 +34,10 @@ template <> inline
 void call_teardown<void>(HSQUIRRELVM vm) {
 }
 
-template <class R, class... T> inline
-R call(HSQUIRRELVM vm, const HSQOBJECT& table,
-       const std::string& name, T... args) {
-    keeper k(vm);
+template <class... T> inline
+void call_setup(HSQUIRRELVM vm, const HSQOBJECT& table,
+                const std::string& name, T... args) {
 
-    //sq_pushroottable(vm);
     sq_pushobject(vm, table);
     sq_pushstring(vm, name.data(), name.length());
     if (!SQ_SUCCEEDED(sq_get(vm, -2))) {
@@ -47,13 +45,27 @@ R call(HSQUIRRELVM vm, const HSQOBJECT& table,
     }
 
     sq_remove(vm, -2);
-    sq_pushroottable(vm);
-    call_setup(vm, 0, args...);
+    sq_pushobject(vm, table);
+    call_setup_arg(vm, 0, args...);
     if (!SQ_SUCCEEDED(sq_call(vm, sizeof...(args)+1, SQTrue, SQTrue))) {
         throw squirrel_error("function call failed: " + name);
     }
+}
 
+template <class R, class... T> inline
+R call(HSQUIRRELVM vm, const HSQOBJECT& table,
+       const std::string& name, T... args) {
+
+    keeper k(vm);
+    call_setup(vm, table, name, args...);
     return call_teardown<R>(vm);
+}
+
+template <class... T> inline
+void co_call(HSQUIRRELVM vm, const HSQOBJECT& table,
+             const std::string& name, T... args) {
+
+    call_setup(vm, table, name, args...);
 }
 
 }

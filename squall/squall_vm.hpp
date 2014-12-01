@@ -46,6 +46,7 @@ public:
     ~VM() { sq_setforeignptr(handle(), 0); }
 
     template <class R, class... T>
+
     R call(const std::string& name, T... args) {
         return root_table_->call<R>(name, args...);
     }
@@ -57,6 +58,11 @@ public:
 
     void defraw(const std::string& s, SQInteger (*f)(HSQUIRRELVM)) {
         root_table_->defraw(s, f);
+    }
+
+    template <class... T>
+    Coroutine co_call(const std::string& name, T... args) {
+        return root_table_->co_call(name, args...);
     }
 
     KlassTable& klass_table() { return klass_table_; }

@@ -2,7 +2,7 @@
 
 LINKOPTS = -L../SQUIRREL3/lib -lsquirrel -lsqstdlib
 
-all: simple export_object klass rawfunc table
+all: simple export_object klass rawfunc table coroutine
 
 simple: simple.o
 	clang++ -o $@ $^ $(LINKOPTS)
@@ -19,12 +19,15 @@ rawfunc: rawfunc.o
 table: table.o
 	clang++ -o $@ $^ $(LINKOPTS)
 
+coroutine: coroutine.o
+	clang++ -o $@ $^ $(LINKOPTS)
+
 .cpp.o:
 	clang++ -std=c++11 -I../SQUIRREL3/include -c -o $@ $^ 
 
 clean:
-	rm -f simple.o export_object.o klass.o rawfunc.o table.o
-	rm -f simple export_object klass rawfunc table
+	rm -f simple.o export_object.o klass.o rawfunc.o table.o coroutine.o
+	rm -f simple export_object klass rawfunc table coroutine
 
 rebuild:
 	make clean && make

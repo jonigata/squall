@@ -3,6 +3,7 @@
 
 #include <squirrel.h>
 #include "squall_stack_operation.hpp"
+#include "squall_coroutine.hpp"
 
 namespace squall {
 
@@ -52,6 +53,13 @@ public:
 
     void defraw(const std::string& s, SQInteger (*f)(HSQUIRRELVM)) {
         detail::defraw(vm_, tableobj_, s, f);
+    }
+
+    template <class... T>
+    Coroutine co_call(const std::string& name, T... args) {
+        SQInteger top = sq_gettop(handle());
+        detail::call_setup(vm_, tableobj_, name, args...);
+        return Coroutine(vm_, top);
     }
 
 protected:
