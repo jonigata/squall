@@ -14,3 +14,8 @@ function quux(foo) {
   print("==== quux called\n");
   foo.qux("world");
 }
+
+function zot2(foo2) {
+  foo2.bar2();
+  foo2.bar();
+}
