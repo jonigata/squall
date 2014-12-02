@@ -282,3 +282,58 @@ int main() {
 ```
 
 
+## To derive
+
+Squirrel
+```
+function zot(foo2) {
+  foo2.bar2();
+  foo2.bar();
+}
+```
+
+C++
+```
+#include "../squall/squall_vmstd.hpp"
+#include <iostream>
+
+class Foo {
+public:
+    Foo() {}
+
+    void bar() {
+        std::cerr << "**** bar called: " << std::endl;
+    }
+};
+
+class Foo2 : public Foo {
+public:
+    void bar2() {
+        std::cerr << "**** bar2 called: " << std::endl;
+    };
+};
+
+int main() {
+    try {
+        {
+            squall::Klass<Foo> k(vm, "Foo");
+            k.func("bar", &Foo::bar);
+        }
+
+        {
+            squall::Klass<Foo2, Foo> k(vm, "Foo2");
+            k.func("bar2", &Foo2::bar2);
+        }
+
+        Foo2 foo2;
+        vm.call<void>("zot", &foo2);
+    }
+    catch(squall::squirrel_error& e) {
+        std::cerr << e.what() << std::endl;
+    }
+
+    return 0;
+}
+```
+
+
