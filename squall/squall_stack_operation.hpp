@@ -210,7 +210,7 @@ struct Fetch<bool, FC> {
 
 template <FetchContext FC>
 struct Fetch<string_wrapper, FC> {
-    static string doit(HSQUIRRELVM vm, SQInteger index) {
+    static string_wrapper doit(HSQUIRRELVM vm, SQInteger index) {
         return getdata<const SQChar*, FC>(
             vm, index, OT_STRING, sq_getstring);
     }

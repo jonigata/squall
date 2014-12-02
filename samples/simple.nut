@@ -14,3 +14,12 @@ function baz() {
   print("==== baz called\n");
   return bar(4649);
 }
+
+function foo2() {
+  foo_a("hello");
+}
+
+function foo3() {
+  foo_b("world");
+}
+

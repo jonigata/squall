@@ -26,8 +26,15 @@ int main() {
         int n2 = vm.call<int>("baz");
         std::cout << "**** return value: " << n2 << std::endl;
 
-        vm.defun("zot", [](const std::string&){});
-        vm.defun("zot", [](const char*){});
+        vm.defun("foo_a", [](const char* s){
+                std::cout << "**** foo_a called: " << s << std::endl;
+            });
+        vm.call<void>("foo2");
+
+        vm.defun("foo_b", [](const std::string& s){
+                std::cout << "**** foo_b called: " << s << std::endl;
+            });
+        vm.call<void>("foo3");
     }
     catch(squall::squirrel_error& e) {
         std::cerr << e.what() << std::endl;
