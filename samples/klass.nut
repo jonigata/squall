@@ -9,3 +9,8 @@ function zot(foo) {
   foo.bar();
   foo.baz("hello");
 }
+
+function quux(foo) {
+  print("==== quux called\n");
+  foo.qux("world");
+}

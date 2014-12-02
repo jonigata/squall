@@ -29,7 +29,7 @@ public:
     template <class R>
     R yielded() {
         validate_vm();
-        return detail::fetch<R>(vm_, -1);
+        return detail::fetch<R, detail::FetchContext::YieldedValue>(vm_, -1);
     }
 
     template <class R>

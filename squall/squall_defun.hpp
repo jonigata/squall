@@ -34,7 +34,8 @@ template <class R, class H, class... T> inline
 int stub_aux(
     HSQUIRRELVM vm, const std::function<R (H, T...)>& f, SQInteger index) {
 
-    std::function<R (T...)> newf = partial(f, fetch<H>(vm, index));
+    std::function<R (T...)> newf = partial(
+        f, fetch<H, detail::FetchContext::Argument>(vm, index));
     return stub_aux(vm, newf, index + 1);
 }
 
@@ -137,6 +138,16 @@ void defraw(
     sq_setnativeclosurename(vm, -1, name.c_str());
     sq_newslot(vm, -3, SQFalse);
     sq_pop(vm, 1);
+}
+
+template <class R, class... A>
+void push_closure(HSQUIRRELVM vm, std::function<R (A...)> v) {
+    auto argtypemask = "." + TypeMaskList<A...>::doit();
+
+    construct_object(vm, v);
+    sq_newclosure(vm, stub<1, std::function<R (A...)>>, 1);
+    sq_setparamscheck(vm, SQ_MATCHTYPEMASKSTRING, argtypemask.c_str());
+    sq_setnativeclosurename(vm, -1, "<C++ lambda>");
 }
 
 }

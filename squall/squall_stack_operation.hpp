@@ -5,6 +5,7 @@
 
 #include <squirrel.h>
 #include "squall_exception.hpp"
+#include "squall_closure_decl.hpp"
 
 //#include "demangle.hpp"
 
@@ -63,6 +64,14 @@ void push_aux(HSQUIRRELVM vm, T* v) {
     }
 }
 
+template <class R, class... A>
+void push_closure(HSQUIRRELVM vm, std::function<R (A...)> v);
+
+template <class R, class... A> inline
+void push_aux(HSQUIRRELVM vm, std::function<R (A...)> v) {
+    push_closure(vm, v);
+}
+
 template <> inline
 void push_aux<int>(HSQUIRRELVM vm, int v) {
     sq_pushinteger(vm, v);
@@ -87,87 +96,130 @@ void push(HSQUIRRELVM vm, const T& v) {
 
 ////////////////////////////////////////////////////////////////
 // fetch
-inline
-void check_argument_type(
-    HSQUIRRELVM vm, SQInteger index, SQObjectType t, const char* tn) {
-    if (sq_gettype(vm, index) != t) {
+enum class FetchContext {
+    Argument,
+    ReturnValue,
+    TableEntry,
+    YieldedValue,
+};
+
+template <FetchContext> string fetch_context_string();
+
+template <>
+string fetch_context_string<FetchContext::Argument>() {
+    return "argument";
+}
+
+template <>
+string fetch_context_string<FetchContext::ReturnValue>() {
+    return "return value";
+}
+
+template <>
+string fetch_context_string<FetchContext::TableEntry>() {
+    return "table entry";
+}
+
+template <>
+string fetch_context_string<FetchContext::YieldedValue>() {
+    return "yielded value";
+}
+
+template <FetchContext FC>
+void check_argument_type(HSQUIRRELVM vm, SQInteger index, SQObjectType t) {
+    SQObjectType at = sq_gettype(vm, index);
+    if (at != t) {
         throw squirrel_error(
-            std::string("value must be ") + tn);
+            fetch_context_string<FC>() + " must be " + get_type_text(t) +
+            ", actual value is " + get_type_text(at));
     }
 }
 
-template <class T, class F>
+template <class T, FetchContext FC, class F>
 T getdata(
-    HSQUIRRELVM vm, SQInteger index, SQObjectType t, const char* tn, F f) {
-    check_argument_type(vm, index, t, tn);
+    HSQUIRRELVM vm, SQInteger index, SQObjectType t, F f) {
+    check_argument_type<FC>(vm, index, t);
     T r;
     f(vm, index, &r);
     return r;
 }
 
-template <class T>
+template <class T, FetchContext FC>
 struct Fetch {
 public:
     static T doit(HSQUIRRELVM vm, SQInteger index) {
-        check_argument_type(vm, index, OT_USERDATA, "userdata");
+        check_argument_type<FC>(vm, index, OT_USERDATA);
         SQUserPointer r;
         sq_getuserdata(vm, index, &r, NULL);
         return **((T**)r);
     }
 };
 
-template <class T>
-struct Fetch<T*> {
+template <class T, FetchContext FC>
+struct Fetch<T*, FC> {
     static T* doit(HSQUIRRELVM vm, SQInteger index) {
 
         HSQOBJECT sqo;
         if (klass_table(vm).find_klass_object<T>(sqo)) {
+            check_argument_type<FC>(vm, index, OT_INSTANCE);
             SQUserPointer r;
             sq_getinstanceup(vm, index, &r, NULL);
             return (T*)r;
         } else {
-            return (T*)getdata<SQUserPointer>(
-                vm, index, OT_USERPOINTER, "userpointer", sq_getuserpointer);
+            return (T*)getdata<SQUserPointer, FC>(
+                vm, index, OT_USERPOINTER, sq_getuserpointer);
         }
     }
 };
 
-template <>
-struct Fetch<int> {
+template <class R, class... A, FetchContext FC>
+struct Fetch<std::function<R (A...)>, FC> {
+    static std::function<R (A...)> doit(HSQUIRRELVM vm, SQInteger index) {
+        auto t = sq_gettype(vm, index);
+        if (t == OT_NATIVECLOSURE || t == OT_CLOSURE) {
+            return Closure<R (A...)>(vm, index);
+        } else {
+            throw squirrel_error("value must be closure or native closure");
+        }
+    }
+};
+
+template <FetchContext FC>
+struct Fetch<int, FC> {
     static int doit(HSQUIRRELVM vm, SQInteger index) {
-        return getdata<SQInteger>(
-            vm, index, OT_INTEGER, "integer", sq_getinteger);
+        return getdata<SQInteger, FC>(
+            vm, index, OT_INTEGER, sq_getinteger);
     }
 };
 
-template <>
-struct Fetch<float> {
+template <FetchContext FC>
+struct Fetch<float, FC> {
     static float doit(HSQUIRRELVM vm, SQInteger index) {
-        return getdata<SQFloat>(
-            vm, index, OT_FLOAT, "float", sq_getfloat);
+        return getdata<SQFloat, FC>(
+            vm, index, OT_FLOAT, sq_getfloat);
     }
 };
 
-template <>
-struct Fetch<bool> {
+template <FetchContext FC>
+struct Fetch<bool, FC> {
     static bool doit(HSQUIRRELVM vm, SQInteger index) {
-        return getdata<SQBool>(
-            vm, index, OT_BOOL, "bool", sq_getbool);
+        return getdata<SQBool, FC>(
+            vm, index, OT_BOOL, sq_getbool);
     }
 };
 
-template <>
-struct Fetch<string_wrapper> {
+template <FetchContext FC>
+struct Fetch<string_wrapper, FC> {
     static string doit(HSQUIRRELVM vm, SQInteger index) {
-        return getdata<const SQChar*>(
-            vm, index, OT_STRING, "string", sq_getstring);
+        return getdata<const SQChar*, FC>(
+            vm, index, OT_STRING, sq_getstring);
     }
 };
 
-template <class T>
+template <class T, FetchContext FC>
 typename wrapped_type<T>::value_type
 fetch(HSQUIRRELVM vm, SQInteger index) {
-    return Fetch<typename wrapped_type<T>::wrapper_type>::doit(vm, index);
+    return Fetch<typename wrapped_type<T>::wrapper_type, FC>::doit(vm, index);
 }
 
 }

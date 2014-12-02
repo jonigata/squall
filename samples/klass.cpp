@@ -28,6 +28,12 @@ int main() {
 
         Foo foo;
         vm.call<void>("zot", &foo);
+
+        k.func("qux", [](Foo* x, const std::string& y) {
+                std::cerr << "**** qux called: " << y << std::endl;
+                x->baz(y);
+            });
+        vm.call<void>("quux", &foo);
     }
     catch(squall::squirrel_error& e) {
         std::cerr << e.what() << std::endl;

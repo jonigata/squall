@@ -36,7 +36,7 @@ public:
         if (!SQ_SUCCEEDED(sq_get(vm_, -2))) {
             return false;
         }
-        r = detail::fetch<T>(vm_, -1);
+        r = detail::fetch<T, detail::FetchContext::TableEntry>(vm_, -1);
         sq_pop(vm_, 2);
         return true;
     }

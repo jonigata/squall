@@ -60,6 +60,28 @@ template <class T>
 typename wrapped_type<T>::wrapper_type
 wrap_type(T x) { return typename wrapped_type<T>::wrapper_type(x); }
 
+inline
+string get_type_text(SQObjectType t) {
+    switch(t) {
+        case OT_NULL:           return "null";        
+        case OT_INTEGER:        return "integer";
+        case OT_FLOAT:          return "float";
+        case OT_STRING:         return "string";
+        case OT_TABLE:          return "table";
+        case OT_ARRAY:          return "array";
+        case OT_USERDATA:       return "userdata";
+        case OT_CLOSURE:        return "closurefunction";    
+        case OT_NATIVECLOSURE:  return "native closureC function";
+        case OT_GENERATOR:      return "generator";
+        case OT_USERPOINTER:    return "userpointer";
+        case OT_CLASS:          return "class";
+        case OT_INSTANCE:       return "instance";
+        case OT_WEAKREF:        return "weak reference";
+        default:                return "unknown";
+    }
+}
+		
+
 }
 
 #endif // UTILITY_HPP_

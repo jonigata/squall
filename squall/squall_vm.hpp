@@ -10,6 +10,7 @@
 #include "squall_defun.hpp"
 #include "squall_make_function.hpp"
 #include "squall_table_base.hpp"
+#include "squall_closure.hpp"
 
 namespace squall {
 

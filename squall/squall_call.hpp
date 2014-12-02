@@ -15,19 +15,19 @@ namespace detail {
 ////////////////////////////////////////////////////////////////
 // call
 inline
-void call_setup_arg(HSQUIRRELVM vm, int index) {
+void call_setup_arg(HSQUIRRELVM vm) {
 }
 
 template <class V, class... T> inline
-void call_setup_arg(HSQUIRRELVM vm, int index, V head, T... tail) {
+void call_setup_arg(HSQUIRRELVM vm, V head, T... tail) {
 
     push<V>(vm, head);
-    call_setup_arg(vm, index+1, tail...);
+    call_setup_arg(vm, tail...);
 }
 
 template <class R> inline
 R call_teardown(HSQUIRRELVM vm) {
-    return fetch<R>(vm, -1);
+    return fetch<R, detail::FetchContext::ReturnValue>(vm, -1);
 }
 
 template <> inline
@@ -46,7 +46,7 @@ void call_setup(HSQUIRRELVM vm, const HSQOBJECT& table,
 
     sq_remove(vm, -2);
     sq_pushobject(vm, table);
-    call_setup_arg(vm, 0, args...);
+    call_setup_arg(vm, args...);
     if (!SQ_SUCCEEDED(sq_call(vm, sizeof...(args)+1, SQTrue, SQTrue))) {
         throw squirrel_error("function call failed: " + name);
     }
