@@ -26,6 +26,15 @@ public:
     static size_t hash() { return typeid(KlassImp<C>).hash_code(); }
 
 public:
+    KlassImp(HSQUIRRELVM vm, const string& name, const HSQOBJECT& baseclass)
+        : vm_(vm), name_(name), closed_(false) {
+
+        keeper k(vm);
+        sq_pushobject(vm, baseclass);
+        sq_newclass(vm, SQTrue);
+        sq_getstackobj(vm, -1, &sqclass_);
+        sq_addref(vm, &sqclass_);
+    }
     KlassImp(HSQUIRRELVM vm, const string& name)
         : vm_(vm), name_(name), closed_(false) {
 
@@ -63,14 +72,43 @@ private:
 }
 
 class KlassTable {
+private:
+    typedef
+        std::unordered_map<size_t,
+                           std::shared_ptr<detail::KlassImpBase>>
+        klasses_type;
+    
+
 public:
+    template <class C, class Base>
+    struct KlassAdd {
+        static
+        std::shared_ptr<detail::KlassImp<C>>
+        doit(const klasses_type& klasses, HSQUIRRELVM vm, const string& name) {
+            auto bh = detail::KlassImp<Base>::hash();
+            return std::make_shared<detail::KlassImp<C>>(
+                vm, name,
+                (*klasses.find(bh)).second->get_klass_object());
+        }
+    };
+
     template <class C>
+    struct KlassAdd<C, void> {
+        static
+        std::shared_ptr<detail::KlassImp<C>>
+        doit(const klasses_type& klasses, HSQUIRRELVM vm, const string& name) {
+            return std::make_shared<detail::KlassImp<C>>(vm, name);
+        }
+    };
+
+
+    template <class C, class Base>
     std::weak_ptr<detail::KlassImp<C>>
     add_klass(HSQUIRRELVM vm, const string& name) {
         size_t h = detail::KlassImp<C>::hash();
         auto i = klasses_.find(h);
         if (i == klasses_.end()) {
-            auto p = std::make_shared<detail::KlassImp<C>>(vm, name);
+            auto p = KlassAdd<C, Base>::doit(klasses_, vm, name);
             klasses_[h] = p;
             return p;
         } else {

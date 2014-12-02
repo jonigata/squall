@@ -4,6 +4,7 @@
 #include <squirrel.h>
 #include "squall_stack_operation.hpp"
 #include "squall_partial_apply.hpp"
+#include "squall_make_function.hpp"
 
 //#include "squall_demangle.hpp"
 #include <iostream>
@@ -14,30 +15,39 @@ namespace detail {
 
 ////////////////////////////////////////////////////////////////
 // defun
-template <class R> inline
-int stub_aux(
-    HSQUIRRELVM vm, const std::function<R ()>& f, SQInteger index) {
+template <class F>
+struct Stub;
 
-    push<R>(vm, f());
-    return 1;
-}
+template <>
+struct Stub<void ()> {
+    template <class F>
+    static int doit(HSQUIRRELVM vm, SQInteger index, F f) {
+        f();
+        return 0;
+    }
+};
 
-template <> inline
-int stub_aux<void>(
-    HSQUIRRELVM vm, const std::function<void ()>& f, SQInteger index) {
+template <class R>
+struct Stub<R ()> {
+    template <class F>
+    static int doit(HSQUIRRELVM vm, SQInteger index, F f) {
+        push<R>(vm, f());
+        return 1;
+    }
+};
 
-    f();
-    return 0;
-}
-
-template <class R, class H, class... T> inline
-int stub_aux(
-    HSQUIRRELVM vm, const std::function<R (H, T...)>& f, SQInteger index) {
-
-    std::function<R (T...)> newf = partial(
-        f, fetch<H, detail::FetchContext::Argument>(vm, index));
-    return stub_aux(vm, newf, index + 1);
-}
+template <class R, class H, class... T>
+struct Stub<R (H, T...)> {
+    template <class F>
+    static int doit(HSQUIRRELVM vm, SQInteger index, F f) {
+        auto newf =
+            partial(
+                f,
+                unwrap_type(
+                    fetch<H, detail::FetchContext::Argument>(vm, index)));
+        return Stub<R (T...)>::doit(vm, index+1, newf);
+    }
+};
 
 /*
 inline
@@ -56,8 +66,8 @@ SQInteger stub(HSQUIRRELVM vm) {
         if(!SQ_SUCCEEDED(sq_getuserdata(vm, -1, &fp, NULL))) { assert(0); }
         const F& f = **((F**)fp);
 
-        //return stub_aux(klass_table, f, Offset);
-        SQInteger x = stub_aux(vm, f, Offset);
+        SQInteger x = Stub<typename detail::function_traits<F>::type>::doit(
+            vm, Offset, f);
         return x;
     }
     catch(std::exception& e) {

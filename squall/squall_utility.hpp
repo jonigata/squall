@@ -22,10 +22,9 @@ struct keeper {
 struct string_wrapper {
     string_wrapper(const SQChar* p) : s_(p) {}
     string_wrapper(const string& s) : s_(s.c_str()) {}
-    const std::string s_;
+    const SQChar* s_;
 
-    operator const SQChar*() const { return s_.c_str(); }
-    operator const std::string&() const { return s_; }
+    operator const SQChar*() const { return s_; }
 };
 
 template <class T> struct wrapped_type {
@@ -60,6 +59,20 @@ template <> struct wrapped_type<const string&> {
 template <class T>
 typename wrapped_type<T>::wrapper_type
 wrap_type(T x) { return typename wrapped_type<T>::wrapper_type(x); }
+
+template <class T> struct unwrapped_type {
+    typedef T value_type;
+};
+template <class T> struct unwrapped_type<T*> {
+    typedef T* value_type;
+};
+template <> struct unwrapped_type<string_wrapper> {
+    typedef const SQChar* value_type;
+};
+
+template <class T>
+typename unwrapped_type<T>::value_type
+unwrap_type(T x) { return typename unwrapped_type<T>::value_type(x); }
 
 inline
 string get_type_text(SQObjectType t) {

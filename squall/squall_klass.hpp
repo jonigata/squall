@@ -8,11 +8,11 @@
 
 namespace squall {
 
-template <class C>
+template <class C, class Base = void>
 class Klass {
 public:
     Klass(VM& vm, const string& name) : vm_(vm) {
-        imp_ = vm.klass_table().add_klass<C>(vm_.handle(), name);
+        imp_ = vm.klass_table().add_klass<C, Base>(vm_.handle(), name);
     }
     ~Klass() { imp_.lock()->close(); }
 
@@ -22,13 +22,13 @@ public:
     void operator=(const Klass&&) = delete;
     
     template <class F>
-    Klass<C>& func(const char* name, F f) {
+    Klass<C, Base>& func(const char* name, F f) {
         func(string(name), f);
         return *this;
     }
 
     template <class F>
-    Klass<C>& func(const string& name, F f) {
+    Klass<C, Base>& func(const string& name, F f) {
         detail::defun_local(
             vm_.handle(),
             imp_.lock()->get_klass_object(),
