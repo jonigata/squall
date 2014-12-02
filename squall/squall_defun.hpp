@@ -62,7 +62,7 @@ SQInteger stub(HSQUIRRELVM vm) {
     }
     catch(std::exception& e) {
         return sq_throwerror(
-            vm, (std::string("error in callback: ") + e.what()).c_str());
+            vm, (string("error in callback: ") + e.what()).c_str());
     }
 }
 

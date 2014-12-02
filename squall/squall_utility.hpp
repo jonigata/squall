@@ -20,11 +20,12 @@ struct keeper {
 ////////////////////////////////////////////////////////////////
 // type wrapper
 struct string_wrapper {
-    string_wrapper(const SQChar* p) : p_(p) {}
-    string_wrapper(const string& s) : p_(s.c_str()) {}
-    const SQChar* p_;
+    string_wrapper(const SQChar* p) : s_(p) {}
+    string_wrapper(const string& s) : s_(s.c_str()) {}
+    const std::string s_;
 
-    operator const SQChar*() const { return p_; }
+    operator const SQChar*() const { return s_.c_str(); }
+    operator const std::string&() const { return s_; }
 };
 
 template <class T> struct wrapped_type {
@@ -39,19 +40,19 @@ template <> struct wrapped_type<const SQChar*> {
     typedef string_wrapper  wrapper_type;
     typedef string          value_type;
 };
-template <> struct wrapped_type<std::string> {
+template <> struct wrapped_type<string> {
     typedef string_wrapper  wrapper_type;
     typedef string          value_type;
 };
-template <> struct wrapped_type<const std::string> {
+template <> struct wrapped_type<const string> {
     typedef string_wrapper  wrapper_type;
     typedef string          value_type;
 };
-template <> struct wrapped_type<std::string&> {
+template <> struct wrapped_type<string&> {
     typedef string_wrapper  wrapper_type;
     typedef string          value_type;
 };
-template <> struct wrapped_type<const std::string&> {
+template <> struct wrapped_type<const string&> {
     typedef string_wrapper  wrapper_type;
     typedef string          value_type;
 };

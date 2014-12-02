@@ -26,7 +26,7 @@ public:
     static size_t hash() { return typeid(KlassImp<C>).hash_code(); }
 
 public:
-    KlassImp(HSQUIRRELVM vm, const std::string& name)
+    KlassImp(HSQUIRRELVM vm, const string& name)
         : vm_(vm), name_(name), closed_(false) {
 
         keeper k(vm);
@@ -54,7 +54,7 @@ public:
 
 private:
     HSQUIRRELVM vm_;
-    std::string name_;
+    string      name_;
     bool        closed_;
     HSQOBJECT   sqclass_;
     
@@ -66,7 +66,7 @@ class KlassTable {
 public:
     template <class C>
     std::weak_ptr<detail::KlassImp<C>>
-    add_klass(HSQUIRRELVM vm, const std::string& name) {
+    add_klass(HSQUIRRELVM vm, const string& name) {
         size_t h = detail::KlassImp<C>::hash();
         auto i = klasses_.find(h);
         if (i == klasses_.end()) {

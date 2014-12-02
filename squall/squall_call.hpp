@@ -36,7 +36,7 @@ void call_teardown<void>(HSQUIRRELVM vm) {
 
 template <class... T> inline
 void call_setup(HSQUIRRELVM vm, const HSQOBJECT& table,
-                const std::string& name, T... args) {
+                const string& name, T... args) {
 
     sq_pushobject(vm, table);
     sq_pushstring(vm, name.data(), name.length());
@@ -53,8 +53,7 @@ void call_setup(HSQUIRRELVM vm, const HSQOBJECT& table,
 }
 
 template <class R, class... T> inline
-R call(HSQUIRRELVM vm, const HSQOBJECT& table,
-       const std::string& name, T... args) {
+R call(HSQUIRRELVM vm, const HSQOBJECT& table,const string& name, T... args) {
 
     keeper k(vm);
     call_setup(vm, table, name, args...);
@@ -63,7 +62,7 @@ R call(HSQUIRRELVM vm, const HSQOBJECT& table,
 
 template <class... T> inline
 void co_call(HSQUIRRELVM vm, const HSQOBJECT& table,
-             const std::string& name, T... args) {
+             const string& name, T... args) {
 
     call_setup(vm, table, name, args...);
 }

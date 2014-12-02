@@ -217,7 +217,7 @@ struct Fetch<string_wrapper, FC> {
 };
 
 template <class T, FetchContext FC>
-typename wrapped_type<T>::value_type
+typename wrapped_type<T>::wrapper_type
 fetch(HSQUIRRELVM vm, SQInteger index) {
     return Fetch<typename wrapped_type<T>::wrapper_type, FC>::doit(vm, index);
 }
