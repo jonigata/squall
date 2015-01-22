@@ -14,7 +14,7 @@ struct keeper {
     keeper(HSQUIRRELVM v) { vm = v; top = sq_gettop(vm); }
     ~keeper() { sq_settop(vm, top); }
     HSQUIRRELVM vm;
-    int top;
+    SQInteger top;
 };
 
 ////////////////////////////////////////////////////////////////

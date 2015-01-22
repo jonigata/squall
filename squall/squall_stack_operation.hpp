@@ -73,7 +73,7 @@ void push_aux(HSQUIRRELVM vm, std::function<R (A...)> v) {
 }
 
 template <> inline
-void push_aux<int>(HSQUIRRELVM vm, int v) {
+void push_aux<SQInteger>(HSQUIRRELVM vm, SQInteger v) {
     sq_pushinteger(vm, v);
 }
 template <> inline
@@ -106,22 +106,22 @@ enum class FetchContext {
 template <FetchContext> string fetch_context_string();
 
 template <>
-string fetch_context_string<FetchContext::Argument>() {
+inline string fetch_context_string<FetchContext::Argument>() {
     return "argument";
 }
 
 template <>
-string fetch_context_string<FetchContext::ReturnValue>() {
+inline string fetch_context_string<FetchContext::ReturnValue>() {
     return "return value";
 }
 
 template <>
-string fetch_context_string<FetchContext::TableEntry>() {
+inline string fetch_context_string<FetchContext::TableEntry>() {
     return "table entry";
 }
 
 template <>
-string fetch_context_string<FetchContext::YieldedValue>() {
+inline string fetch_context_string<FetchContext::YieldedValue>() {
     return "yielded value";
 }
 
@@ -185,8 +185,8 @@ struct Fetch<std::function<R (A...)>, FC> {
 };
 
 template <FetchContext FC>
-struct Fetch<int, FC> {
-    static int doit(HSQUIRRELVM vm, SQInteger index) {
+struct Fetch<SQInteger, FC> {
+    static SQInteger doit(HSQUIRRELVM vm, SQInteger index) {
         return getdata<SQInteger, FC>(
             vm, index, OT_INTEGER, sq_getinteger);
     }

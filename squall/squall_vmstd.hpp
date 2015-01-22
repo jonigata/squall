@@ -16,7 +16,7 @@ template <class T>
 void pf(HSQUIRRELVM v, const T* s, ...);
 
 template <>
-void pf<char>(HSQUIRRELVM v, const char* s, ...)  {
+void inline pf<char>(HSQUIRRELVM v, const char* s, ...)  {
     va_list arglist;
     va_start(arglist, s);
     vprintf(s, arglist);
@@ -24,7 +24,7 @@ void pf<char>(HSQUIRRELVM v, const char* s, ...)  {
 }
 
 template <>
-void pf<wchar_t>(HSQUIRRELVM v, const wchar_t* s, ...)  {
+void inline pf<wchar_t>(HSQUIRRELVM v, const wchar_t* s, ...)  {
     va_list arglist;
     va_start(arglist, s);
     vwprintf(s, arglist);

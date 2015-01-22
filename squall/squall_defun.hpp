@@ -78,12 +78,12 @@ SQInteger stub(HSQUIRRELVM vm) {
 
 template <class T> char typemask() { return '.'; }
 
-template <> char typemask<decltype(nullptr)>() { return 'o'; }
-template <> char typemask<int>() { return 'i'; }
-template <> char typemask<float>() { return 'f'; }
-template <> char typemask<bool>() { return 'b'; }
-template <> char typemask<const char*>() { return 's'; }
-template <> char typemask<string>() { return 's'; }
+template <> inline char typemask<decltype(nullptr)>() { return 'o'; }
+template <> inline char typemask<int>() { return 'i'; }
+template <> inline char typemask<float>() { return 'f'; }
+template <> inline char typemask<bool>() { return 'b'; }
+template <> inline char typemask<const char*>() { return 's'; }
+template <> inline char typemask<string>() { return 's'; }
 
 template <class... T>
 struct TypeMaskList;

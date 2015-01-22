@@ -66,6 +66,7 @@ public:
         return root_table_->co_call(name, args...);
     }
 
+    TableBase& root_table() { return *root_table_.get(); }
     KlassTable& klass_table() { return klass_table_; }
     HSQUIRRELVM handle() { return imp_.handle(); }
 
