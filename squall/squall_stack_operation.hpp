@@ -106,22 +106,22 @@ enum class FetchContext {
 template <FetchContext> string fetch_context_string();
 
 template <>
-string fetch_context_string<FetchContext::Argument>() {
+inline string fetch_context_string<FetchContext::Argument>() {
     return "argument";
 }
 
 template <>
-string fetch_context_string<FetchContext::ReturnValue>() {
+inline string fetch_context_string<FetchContext::ReturnValue>() {
     return "return value";
 }
 
 template <>
-string fetch_context_string<FetchContext::TableEntry>() {
+inline string fetch_context_string<FetchContext::TableEntry>() {
     return "table entry";
 }
 
 template <>
-string fetch_context_string<FetchContext::YieldedValue>() {
+inline string fetch_context_string<FetchContext::YieldedValue>() {
     return "yielded value";
 }
 
