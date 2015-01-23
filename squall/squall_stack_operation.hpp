@@ -185,7 +185,6 @@ public:
 template <class T, FetchContext FC>
 struct Fetch<T*, FC> {
     static T* doit(HSQUIRRELVM vm, SQInteger index) {
-
         HSQOBJECT sqo;
         if (klass_table(vm).find_klass_object<T>(sqo)) {
             check_argument_type<FC>(vm, index, OT_INSTANCE);

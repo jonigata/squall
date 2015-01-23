@@ -3,11 +3,9 @@
 
 #include <squirrel.h>
 #include <memory>
-#include <cstring>
 #include <unordered_map>
 #include "squall_utility.hpp"
 #include "squall_exception.hpp"
-#include <iostream>
 
 namespace squall {
 
@@ -181,22 +179,25 @@ public:
 
 
     template <class C, class Base>
-    std::weak_ptr<detail::KlassImp<C>>
+    std::weak_ptr<detail::KlassImp<typename std::remove_cv<C>::type>>
     add_klass(HSQUIRRELVM vm, const string& name) {
-        size_t h = detail::KlassImp<C>::hash();
+        typedef typename std::remove_cv<C>::type CC;
+        size_t h = detail::KlassImp<CC>::hash();
         auto i = klasses_.find(h);
         if (i == klasses_.end()) {
-            auto p = KlassAdd<C, Base>::doit(klasses_, vm, name);
+            auto p = KlassAdd<CC, Base>::doit(klasses_, vm, name);
             klasses_[h] = p;
             return p;
         } else {
-            return std::dynamic_pointer_cast<detail::KlassImp<C>>((*i).second);
+            return std::dynamic_pointer_cast<detail::KlassImp<CC>>(
+                (*i).second);
         }
     }
 
     template <class C>
     bool find_klass_object(HSQOBJECT& obj) {
-        size_t h = detail::KlassImp<C>::hash();
+        typedef typename std::remove_cv<C>::type CC;
+        size_t h = detail::KlassImp<CC>::hash();
         auto i = klasses_.find(h);
         if (i == klasses_.end()) {
             return false;

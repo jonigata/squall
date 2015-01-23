@@ -60,6 +60,30 @@ public:
         return *this;
     }
 
+    template <class GF>
+    Klass<C, Base>& prop(const string& name, GF gf) {
+        auto& imp = *imp_.lock();
+        detail::defprop(
+            vm_.handle(),
+            imp.get_getter_table(),
+            name,
+            to_function(gf));
+        return *this;
+    }
+
+    template <class GF, class SF>
+    Klass<C, Base>& prop(const string& name, GF gf, SF sf) {
+        auto& imp = *imp_.lock();
+        detail::defprop(
+            vm_.handle(),
+            imp.get_getter_table(),
+            imp.get_setter_table(),
+            name,
+            to_function(gf),
+            to_function(sf));
+        return *this;
+    }
+    
 private:
     VM& vm_;
     std::weak_ptr<detail::KlassImp<C>> imp_;

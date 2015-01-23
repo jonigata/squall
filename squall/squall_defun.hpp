@@ -120,7 +120,6 @@ void defun_global(
     HSQUIRRELVM vm, const HSQOBJECT& table,
     const string& name, const std::function<R (T...)>& f) {
 
-    //sq_pushroottable(vm);
     sq_pushobject(vm, table);
     defun<2>(vm, name, f, "." + TypeMaskList<T...>::doit());
     sq_pop(vm, 1);
