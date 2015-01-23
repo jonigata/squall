@@ -220,21 +220,21 @@ struct FetchInt {
 };
 
 template <FetchContext FC>
-struct Fetch<std::int8_t, FC> : public FetchInt<FC, std::int32_t> {};
+struct Fetch<std::int8_t, FC> : public FetchInt<FC, std::int8_t> {};
 template <FetchContext FC>
-struct Fetch<std::int16_t, FC> : public FetchInt<FC, std::int32_t> {};
+struct Fetch<std::int16_t, FC> : public FetchInt<FC, std::int16_t> {};
 template <FetchContext FC>
 struct Fetch<std::int32_t, FC> : public FetchInt<FC, std::int32_t> {};
 template <FetchContext FC>
-struct Fetch<std::int64_t, FC> : public FetchInt<FC, std::int32_t> {};
+struct Fetch<std::int64_t, FC> : public FetchInt<FC, std::int64_t> {};
 template <FetchContext FC>
-struct Fetch<std::uint8_t, FC> : public FetchInt<FC, std::uint32_t> {};
+struct Fetch<std::uint8_t, FC> : public FetchInt<FC, std::uint8_t> {};
 template <FetchContext FC>
-struct Fetch<std::uint16_t, FC> : public FetchInt<FC, std::uint32_t> {};
+struct Fetch<std::uint16_t, FC> : public FetchInt<FC, std::uint16_t> {};
 template <FetchContext FC>
 struct Fetch<std::uint32_t, FC> : public FetchInt<FC, std::uint32_t> {};
 template <FetchContext FC>
-struct Fetch<std::uint64_t, FC> : public FetchInt<FC, std::uint32_t> {};
+struct Fetch<std::uint64_t, FC> : public FetchInt<FC, std::uint64_t> {};
 
 template <FetchContext FC>
 struct Fetch<float, FC> {
