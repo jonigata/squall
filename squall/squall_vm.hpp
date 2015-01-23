@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <functional>
+#include <cstdint>
 #include "squall_klass_table.hpp"
 #include "squall_exception.hpp"
 #include "squall_stack_operation.hpp"

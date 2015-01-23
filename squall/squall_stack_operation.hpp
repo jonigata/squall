@@ -73,8 +73,36 @@ void push_aux(HSQUIRRELVM vm, std::function<R (A...)> v) {
 }
 
 template <> inline
-void push_aux<SQInteger>(HSQUIRRELVM vm, SQInteger v) {
-    sq_pushinteger(vm, v);
+void push_aux<std::int8_t>(HSQUIRRELVM vm, std::int8_t v) {
+    sq_pushinteger(vm, static_cast<SQInteger>(v));
+}
+template <> inline
+void push_aux<std::int16_t>(HSQUIRRELVM vm, std::int16_t v) {
+    sq_pushinteger(vm, static_cast<SQInteger>(v));
+}
+template <> inline
+void push_aux<std::int32_t>(HSQUIRRELVM vm, std::int32_t v) {
+    sq_pushinteger(vm, static_cast<SQInteger>(v));
+}
+template <> inline
+void push_aux<std::int64_t>(HSQUIRRELVM vm, std::int64_t v) {
+    sq_pushinteger(vm, static_cast<SQInteger>(v));
+}
+template <> inline
+void push_aux<std::uint8_t>(HSQUIRRELVM vm, std::uint8_t v) {
+    sq_pushinteger(vm, static_cast<SQInteger>(v));
+}
+template <> inline
+void push_aux<std::uint16_t>(HSQUIRRELVM vm, std::uint16_t v) {
+    sq_pushinteger(vm, static_cast<SQInteger>(v));
+}
+template <> inline
+void push_aux<std::uint32_t>(HSQUIRRELVM vm, std::uint32_t v) {
+    sq_pushinteger(vm, static_cast<SQInteger>(v));
+}
+template <> inline
+void push_aux<std::uint64_t>(HSQUIRRELVM vm, std::uint64_t v) {
+    sq_pushinteger(vm, static_cast<SQInteger>(v));
 }
 template <> inline
 void push_aux<float>(HSQUIRRELVM vm, float v) {
@@ -136,8 +164,7 @@ void check_argument_type(HSQUIRRELVM vm, SQInteger index, SQObjectType t) {
 }
 
 template <class T, FetchContext FC, class F>
-T getdata(
-    HSQUIRRELVM vm, SQInteger index, SQObjectType t, F f) {
+T getdata(HSQUIRRELVM vm, SQInteger index, SQObjectType t, F f) {
     check_argument_type<FC>(vm, index, t);
     T r;
     f(vm, index, &r);
@@ -184,13 +211,30 @@ struct Fetch<std::function<R (A...)>, FC> {
     }
 };
 
-template <FetchContext FC>
-struct Fetch<SQInteger, FC> {
+template <FetchContext FC, class Int>
+struct FetchInt {
     static SQInteger doit(HSQUIRRELVM vm, SQInteger index) {
-        return getdata<SQInteger, FC>(
-            vm, index, OT_INTEGER, sq_getinteger);
+        return static_cast<Int>(
+            getdata<SQInteger, FC>(vm, index, OT_INTEGER, sq_getinteger));
     }
 };
+
+template <FetchContext FC>
+struct Fetch<std::int8_t, FC> : public FetchInt<FC, std::int32_t> {};
+template <FetchContext FC>
+struct Fetch<std::int16_t, FC> : public FetchInt<FC, std::int32_t> {};
+template <FetchContext FC>
+struct Fetch<std::int32_t, FC> : public FetchInt<FC, std::int32_t> {};
+template <FetchContext FC>
+struct Fetch<std::int64_t, FC> : public FetchInt<FC, std::int32_t> {};
+template <FetchContext FC>
+struct Fetch<std::uint8_t, FC> : public FetchInt<FC, std::uint32_t> {};
+template <FetchContext FC>
+struct Fetch<std::uint16_t, FC> : public FetchInt<FC, std::uint32_t> {};
+template <FetchContext FC>
+struct Fetch<std::uint32_t, FC> : public FetchInt<FC, std::uint32_t> {};
+template <FetchContext FC>
+struct Fetch<std::uint64_t, FC> : public FetchInt<FC, std::uint32_t> {};
 
 template <FetchContext FC>
 struct Fetch<float, FC> {
