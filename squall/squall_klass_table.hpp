@@ -40,11 +40,10 @@ public:
         sq_getstackobj(vm, -1, &sqclass_);
         sq_addref(vm, &sqclass_);
 
-        sq_pushstring(vm_, _SC("_get"), -1);
-        sq_pushobject(vm_, getter_table_);
-        sq_newclosure(vm_, delegate_get, 1);
-        sq_newslot(vm_, -3, false);
+        defmetamethod(_SC("_get"), getter_table_, delegate_get);
+        defmetamethod(_SC("_set"), setter_table_, delegate_set);
     }
+    
     KlassImp(HSQUIRRELVM vm, const string& name, const HSQOBJECT& baseclass)
         : vm_(vm), name_(name), closed_(false) {
 
@@ -56,6 +55,9 @@ public:
         sq_newclass(vm, SQTrue);
         sq_getstackobj(vm, -1, &sqclass_);
         sq_addref(vm, &sqclass_);
+
+        defmetamethod(_SC("_get"), getter_table_, delegate_get);
+        defmetamethod(_SC("_set"), setter_table_, delegate_set);
     }
     ~KlassImp() {
         sq_release(vm_, &sqclass_);
@@ -107,8 +109,32 @@ private:
     }
 
     void make_setter_table() {
+        setter_table_ = make_accessor_table();
     }
     
+    static SQInteger delegate_set(HSQUIRRELVM vm) {
+        sq_push(vm, 2);
+        if (!SQ_SUCCEEDED(sq_get(vm, -2))) {
+            const SQChar* s;
+            sq_getstring(vm, 2, &s);
+            return sq_throwerror(
+                vm, ("member variable '" + string(s) + "' not found").c_str());
+        }
+		
+        sq_push(vm, 1);
+        sq_push(vm, 3);
+
+        sq_call(vm, 2, SQTrue, SQTrue);
+        return 0;
+    }
+
+    void defmetamethod(const SQChar* mm, HSQOBJECT table, SQFUNCTION f) {
+        sq_pushstring(vm_, mm, -1);
+        sq_pushobject(vm_, table);
+        sq_newclosure(vm_, f, 1);
+        sq_newslot(vm_, -3, false);
+    }
+
 private:
     HSQUIRRELVM vm_;
     string      name_;

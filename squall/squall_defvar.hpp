@@ -32,22 +32,60 @@ SQInteger var_getter(HSQUIRRELVM vm) {
     return 1;
 }
 
-template <class C, class V>
-void defvar_local(
-    HSQUIRRELVM     vm,
-    HSQOBJECT       getter_table,
-    const string&   name,
-    V C::*          var) {
+template <class C, class V> inline
+SQInteger var_setter(HSQUIRRELVM vm) {
+    C* p = nullptr;
+    sq_getinstanceup(vm, 1, (SQUserPointer*)&p, nullptr);
+		
+    typedef V C::*M;
+    M* mp = nullptr;
+    sq_getuserdata(vm, -1, (SQUserPointer*)&mp, nullptr);
+    M m = *mp;
 
-    sq_pushobject(vm, getter_table);
+    p->*m = fetch<V, FetchContext::Argument>(vm, 2);
+
+    return 0;
+}
+
+template <class M>
+void bind_accessor(
+    HSQUIRRELVM     vm,
+    HSQOBJECT       table,
+    const string&   name,
+    M               var,
+    SQFUNCTION      f) {
+
+    sq_pushobject(vm, table);
     sq_pushstring(vm, name.data(), name.length());
 
     SQUserPointer vp = sq_newuserdata(vm, sizeof(var));
     memcpy(vp, &var, sizeof(var));
 
-    sq_newclosure(vm, var_getter<C, V>, 1);
+    sq_newclosure(vm, f, 1);
     sq_newslot(vm, -3, false);
     sq_pop(vm, 1);
+}
+
+template <class C, class V>
+void defvar_local_const(
+    HSQUIRRELVM     vm,
+    HSQOBJECT       getter_table,
+    const string&   name,
+    const V C::*    var) {
+
+    bind_accessor(vm, getter_table, name, var, &var_getter<C, V>);
+}
+
+template <class C, class V>
+void defvar_local(
+    HSQUIRRELVM     vm,
+    HSQOBJECT       getter_table,
+    HSQOBJECT       setter_table,
+    const string&   name,
+    V C::*          var) {
+
+    bind_accessor(vm, getter_table, name, var, &var_getter<C, V>);
+    bind_accessor(vm, setter_table, name, var, &var_setter<C, V>);
 }
 
 }
