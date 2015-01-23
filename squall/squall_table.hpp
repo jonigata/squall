@@ -8,9 +8,7 @@ namespace squall {
 class Table : public TableBase {
 public:
     Table(VM& vm) : TableBase(vm.handle(), make_table(vm.handle())) {}
-    ~Table() {
-        sq_release(handle(), &tableobj());
-    }        
+    ~Table() { sq_release(handle(), &tableobj()); }        
 
 private:
     static HSQOBJECT make_table(HSQUIRRELVM vm) {

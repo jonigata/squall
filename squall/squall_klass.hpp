@@ -5,6 +5,7 @@
 
 #include "squall_vm.hpp"
 #include "squall_defun.hpp"
+#include "squall_defvar.hpp"
 
 namespace squall {
 
@@ -34,6 +35,16 @@ public:
             imp_.lock()->get_klass_object(),
             name,
             to_function(f));
+        return *this;
+    }
+
+    template <class V>
+    Klass<C, Base>& var(const string& name, V C::* r) {
+        detail::defvar_local(
+            vm_.handle(),
+            imp_.lock()->get_getter_table(),
+            name,
+            r);
         return *this;
     }
 

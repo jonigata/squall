@@ -3,8 +3,11 @@
 
 #include <squirrel.h>
 #include <memory>
+#include <cstring>
 #include <unordered_map>
 #include "squall_utility.hpp"
+#include "squall_exception.hpp"
+#include <iostream>
 
 namespace squall {
 
@@ -26,20 +29,31 @@ public:
     static size_t hash() { return typeid(KlassImp<C>).hash_code(); }
 
 public:
+    KlassImp(HSQUIRRELVM vm, const string& name)
+        : vm_(vm), name_(name), closed_(false) {
+        
+        make_getter_table();
+        make_setter_table();
+        
+        keeper k(vm);
+        sq_newclass(vm, SQFalse);
+        sq_getstackobj(vm, -1, &sqclass_);
+        sq_addref(vm, &sqclass_);
+
+        sq_pushstring(vm_, _SC("_get"), -1);
+        sq_pushobject(vm_, getter_table_);
+        sq_newclosure(vm_, delegate_get, 1);
+        sq_newslot(vm_, -3, false);
+    }
     KlassImp(HSQUIRRELVM vm, const string& name, const HSQOBJECT& baseclass)
         : vm_(vm), name_(name), closed_(false) {
 
+        make_getter_table();
+        make_setter_table();
+        
         keeper k(vm);
         sq_pushobject(vm, baseclass);
         sq_newclass(vm, SQTrue);
-        sq_getstackobj(vm, -1, &sqclass_);
-        sq_addref(vm, &sqclass_);
-    }
-    KlassImp(HSQUIRRELVM vm, const string& name)
-        : vm_(vm), name_(name), closed_(false) {
-
-        keeper k(vm);
-        sq_newclass(vm, SQFalse);
         sq_getstackobj(vm, -1, &sqclass_);
         sq_addref(vm, &sqclass_);
     }
@@ -60,12 +74,48 @@ public:
     }
 
     HSQOBJECT get_klass_object() { return sqclass_; }
+    HSQOBJECT get_getter_table() { return getter_table_; }
+    HSQOBJECT get_setter_table() { return setter_table_; }
+    
+private:
+    HSQOBJECT make_accessor_table() {
+        HSQOBJECT tableobj;
+        sq_newtable(vm_);
+        sq_getstackobj(vm_, -1, &tableobj);
+        sq_addref(vm_, &tableobj);
+        sq_pop(vm_, 1);
+        return tableobj;
+    }
 
+    void make_getter_table() {
+        getter_table_ = make_accessor_table();
+    }
+
+    static SQInteger delegate_get(HSQUIRRELVM vm) {
+        sq_push(vm, 2);
+        if (!SQ_SUCCEEDED(sq_get(vm, -2))) {
+            const SQChar* s;
+            sq_getstring(vm, 2, &s);
+            return sq_throwerror(
+                vm, ("member variable '" + string(s) + "' not found").c_str());
+        }
+		
+        sq_push(vm, 1);
+
+        sq_call(vm, 1, SQTrue, SQTrue);
+        return 1;
+    }
+
+    void make_setter_table() {
+    }
+    
 private:
     HSQUIRRELVM vm_;
     string      name_;
     bool        closed_;
     HSQOBJECT   sqclass_;
+    HSQOBJECT   getter_table_;
+    HSQOBJECT   setter_table_;
     
 };
 

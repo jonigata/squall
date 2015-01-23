@@ -94,6 +94,12 @@ string get_type_text(SQObjectType t) {
         default:                return "unknown";
     }
 }
+
+template <class S>
+void print_stack_object(S& s, HSQUIRRELVM vm, SQInteger idx) {
+    SQObjectType t = sq_gettype(vm, idx);
+    s << get_type_text(t);
+}
 		
 
 }
