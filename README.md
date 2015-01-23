@@ -337,3 +337,49 @@ int main() {
 ```
 
 
+## To export member variables
+
+Squirrel
+```
+function zot(foo) {
+  print(foo.baz); print("\n");
+  print(foo.zot); print("\n");
+  foo.baz = 49;
+  print(foo.baz); print("\n");
+  // foo.zot = 34; // error, because zot is const member variable
+  // print(foo.zot); print("\n");
+}
+```
+
+C++
+```
+class Foo {
+public:
+    Foo() : zot(32) {}
+
+    std::int32_t baz;
+    const std::int32_t zot;
+};
+
+int main() {
+    try {
+        squall::VMStd vm;
+        vm.dofile("var.nut");
+
+        squall::Klass<Foo> k(vm, "Foo");
+        k.var("baz", &Foo::baz);
+        k.var("zot", &Foo::zot);
+        
+        Foo foo;
+        foo.baz = 47;
+        vm.call<void>("zot", &foo);
+    }
+    catch(squall::squirrel_error& e) {
+        std::cerr << e.what() << std::endl;
+    }
+
+    return 0;
+}
+```
+
+
