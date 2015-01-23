@@ -353,6 +353,10 @@ function zot(foo) {
 
 C++
 ```
+#include "../squall/squall_vmstd.hpp"
+#include "../squall/squall_klass.hpp"
+#include <iostream>
+
 class Foo {
 public:
     Foo() : zot(32) {}
@@ -382,4 +386,55 @@ int main() {
 }
 ```
 
+## To define property
 
+Squirrel
+```
+function baz(foo) {
+  print(foo.bar1); print("\n");
+  foo.bar2 = 42;
+  print(foo.bar1); print("\n");
+  print(foo.bar2); print("\n");
+}
+```
+
+C++
+```
+#include "../squall/squall_vmstd.hpp"
+#include "../squall/squall_klass.hpp"
+#include <iostream>
+
+class Foo {
+public:
+    Foo() { zot = 37; }
+
+    int get_zot() const {
+        return zot;
+    }
+    void set_zot(int n) {
+        zot = n * 2;
+    }
+    
+    int zot;
+};
+
+
+int main() {
+    try {
+        squall::VMStd vm;
+        vm.dofile("prop.nut");
+
+        squall::Klass<Foo> k(vm, "Foo");
+        k.prop("bar1", &Foo::get_zot);
+        k.prop("bar2", &Foo::get_zot, &Foo::set_zot);
+        
+        Foo foo;
+        vm.call<void>("baz", &foo);
+    }
+    catch(squall::squirrel_error& e) {
+        std::cerr << e.what() << std::endl;
+    }
+
+    return 0;
+}
+```
