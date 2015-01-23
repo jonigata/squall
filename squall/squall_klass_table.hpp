@@ -61,6 +61,8 @@ public:
     }
     ~KlassImp() {
         sq_release(vm_, &sqclass_);
+        sq_release(vm_, &getter_table_);
+        sq_release(vm_, &setter_table_);
     }
 
     void close() {
