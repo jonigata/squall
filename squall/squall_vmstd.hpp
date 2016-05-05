@@ -49,6 +49,16 @@ public:
         }
     }
 
+    void dostring(const SQChar* source) {
+        keeper k(handle());
+        sq_pushroottable(handle());
+        if (!SQ_SUCCEEDED(sq_compilebuffer(handle(), source, static_cast<int>(scstrlen(source) * sizeof(SQChar)), _SC("dostring"), 1))) {
+            throw squirrel_error("dostring failed");
+        }
+        
+        sq_call(handle(), 1, SQFalse, SQTrue);
+    }
+
 private:
 
 };
