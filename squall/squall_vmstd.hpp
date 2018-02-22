@@ -38,7 +38,7 @@ class VMStd : public VM {
 public:
     VMStd(int stack_size = 1024) : VM(stack_size) {
         sqstd_seterrorhandlers(handle());
-        sq_setprintfunc(handle(), &detail::pf<SQChar>);
+        sq_setprintfunc(handle(), &detail::pf<SQChar>, &detail::pf<SQChar>);
     }
 
     void dofile(const SQChar* filename) {

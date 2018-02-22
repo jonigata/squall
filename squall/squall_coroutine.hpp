@@ -43,7 +43,7 @@ public:
     void resume(T v) {
         validate_vm();
         detail::push(vm_, v);
-        if (!SQ_SUCCEEDED(sq_wakeupvm(vm_, SQTrue, SQTrue, SQTrue))) {
+        if (!SQ_SUCCEEDED(sq_wakeupvm(vm_, SQTrue, SQTrue, SQTrue, SQFalse))) {
             throw squirrel_error("wake up vm failed");
         }
         check_suspended();
@@ -51,7 +51,7 @@ public:
 
     void resume() {
         validate_vm();
-        if (!SQ_SUCCEEDED(sq_wakeupvm(vm_, SQFalse, SQTrue, SQTrue))) {
+        if (!SQ_SUCCEEDED(sq_wakeupvm(vm_, SQFalse, SQTrue, SQTrue, SQFalse))) {
             throw squirrel_error("wake up vm failed");
         }
         check_suspended();

@@ -19,7 +19,7 @@ namespace detail {
         }
 
         template<class U = T, typename std::enable_if<std::is_same<U, wchar_t>::value, std::nullptr_t>::type = nullptr>
-        static const std::string& to_std_string(const string& str) {
+        static std::string to_std_string(const string& str) {
             std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
             return converter.to_bytes(str);
         }
@@ -30,7 +30,7 @@ namespace detail {
         }
 
         template<class U = T, typename std::enable_if<std::is_same<U, wchar_t>::value, std::nullptr_t>::type = nullptr>
-        static const string& to_squall_string(const std::string& str) {
+        static string to_squall_string(const std::string& str) {
             std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
             return converter.from_bytes(str);
         }
