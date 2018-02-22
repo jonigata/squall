@@ -72,18 +72,18 @@ SQInteger stub(HSQUIRRELVM vm) {
     }
     catch(std::exception& e) {
         return sq_throwerror(
-            vm, (string("error in callback: ") + e.what()).c_str());
+            vm, (string(_SC("error in callback: ")) + locale_converter::to_squall_string(e.what()).c_str()).c_str());
     }
 }
 
-template <class T> char typemask() { return '.'; }
+template <class T> SQChar typemask() { return _SC('.'); }
 
-template <> inline char typemask<decltype(nullptr)>() { return 'o'; }
-template <> inline char typemask<int>() { return 'i'; }
-template <> inline char typemask<float>() { return 'f'; }
-template <> inline char typemask<bool>() { return 'b'; }
-template <> inline char typemask<const char*>() { return 's'; }
-template <> inline char typemask<string>() { return 's'; }
+template <> inline SQChar typemask<decltype(nullptr)>() { return _SC('o'); }
+template <> inline SQChar typemask<int>() { return _SC('i'); }
+template <> inline SQChar typemask<float>() { return _SC('f'); }
+template <> inline SQChar typemask<bool>() { return _SC('b'); }
+template <> inline SQChar typemask<const SQChar*>() { return _SC('s'); }
+template <> inline SQChar typemask<string>() { return _SC('s'); }
 
 template <class... T>
 struct TypeMaskList;
@@ -121,7 +121,7 @@ void defun_global(
     const string& name, const std::function<R (T...)>& f) {
 
     sq_pushobject(vm, table);
-    defun<2>(vm, name, f, "." + TypeMaskList<T...>::doit());
+    defun<2>(vm, name, f, _SC(".") + TypeMaskList<T...>::doit());
     sq_pop(vm, 1);
 }
 

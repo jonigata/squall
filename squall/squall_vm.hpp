@@ -38,20 +38,26 @@ public:
         HSQUIRRELVM vm = handle();
         sq_setforeignptr(vm, &klass_table_);
 
-        // root table取得
         sq_pushroottable(vm);
         sq_getstackobj(vm, -1, &root_);
         sq_pop(vm, -1);
 
         root_table_.reset(new TableBase(vm, root_));
     }
-    ~VM() { sq_setforeignptr(handle(), 0); }
+    ~VM() { sq_setforeignptr(handle(), 0); } 
 
-    template <class R, class... T>
-
-    R call(const string& name, T... args) {
+#ifdef _MSC_VER
+    //Avoiding Visual C ++ bugs
+    template <class R, typename... Args>
+    R call(const string& name, Args... args) {
+        return root_table_.get()->call<R>(name, args...);
+    }
+#else
+    template <class R, typename... Args>
+    R call(const string& name, Args... args) {
         return root_table_->call<R>(name, args...);
     }
+#endif
 
     template <class F>
     void defun(const string& name, F f) {

@@ -38,7 +38,7 @@ class VMStd : public VM {
 public:
     VMStd(int stack_size = 1024) : VM(stack_size) {
         sqstd_seterrorhandlers(handle());
-        sq_setprintfunc(handle(), &detail::pf<SQChar>, &detail::pf<SQChar>);
+        sq_setprintfunc(handle(), &detail::pf<SQChar>);
     }
 
     void dofile(const SQChar* filename) {
@@ -52,13 +52,13 @@ public:
     void dostring(const SQChar* source) {
         keeper k(handle());
         if (!SQ_SUCCEEDED(sq_compilebuffer(handle(), source, static_cast<int>(scstrlen(source) * sizeof(SQChar)), _SC("dostring"), 1))) {
-            throw squirrel_error("dostring failed");
+            throw squirrel_error("dostring compile failed");
         }
 
         sq_pushroottable(handle());
 
         if (!SQ_SUCCEEDED(sq_call(handle(), 1, SQFalse, SQTrue))) {
-            throw squirrel_error("dostring failed");
+            throw squirrel_error("dostring call failed");
         }
     }
 

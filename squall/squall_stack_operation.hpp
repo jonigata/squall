@@ -135,22 +135,22 @@ template <FetchContext> string fetch_context_string();
 
 template <>
 inline string fetch_context_string<FetchContext::Argument>() {
-    return "argument";
+    return _SC("argument");
 }
 
 template <>
 inline string fetch_context_string<FetchContext::ReturnValue>() {
-    return "return value";
+    return _SC("return value");
 }
 
 template <>
 inline string fetch_context_string<FetchContext::TableEntry>() {
-    return "table entry";
+    return _SC("table entry");
 }
 
 template <>
 inline string fetch_context_string<FetchContext::YieldedValue>() {
-    return "yielded value";
+    return _SC("yielded value");
 }
 
 template <FetchContext FC>
@@ -158,8 +158,8 @@ void check_argument_type(HSQUIRRELVM vm, SQInteger index, SQObjectType t) {
     SQObjectType at = sq_gettype(vm, index);
     if (at != t) {
         throw squirrel_error(
-            fetch_context_string<FC>() + " must be " + get_type_text(t) +
-            ", actual value is " + get_type_text(at));
+            fetch_context_string<FC>() + _SC(" must be ") + get_type_text(t) +
+            _SC(", actual value is ") + get_type_text(at));
     }
 }
 
