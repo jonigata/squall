@@ -1,10 +1,10 @@
 // 2015/01/23 Naoyuki Hirayama
 
 /*!
-	@file	  squall_defvar.hpp
-	@brief	  <概要>
+@file      squall_defvar.hpp
+@brief      <brief>
 
-	<説明>
+<description>
 */
 
 #ifndef SQUALL_DEFVAR_HPP_

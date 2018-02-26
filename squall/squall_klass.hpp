@@ -23,7 +23,7 @@ public:
     void operator=(const Klass&&) = delete;
     
     template <class F>
-    Klass<C, Base>& func(const char* name, F f) {
+    Klass<C, Base>& func(const SQChar* name, F f) {
         func(string(name), f);
         return *this;
     }

@@ -67,7 +67,7 @@ public:
         if (closed_) { return; }
 
         keeper k(vm_);
-        sq_pushroottable(vm_); // TODO: root固定になってる
+        sq_pushroottable(vm_);
         sq_pushstring(vm_, name_.c_str(), -1);
         sq_pushobject(vm_, sqclass_);
         sq_createslot(vm_, -3);
@@ -99,7 +99,7 @@ private:
             const SQChar* s;
             sq_getstring(vm, 2, &s);
             return sq_throwerror(
-                vm, ("member variable '" + string(s) + "' not found").c_str());
+                vm, (_SC("member variable '") + string(s) + _SC("' not found")).c_str());
         }
 		
         sq_push(vm, 1);
@@ -118,7 +118,7 @@ private:
             const SQChar* s;
             sq_getstring(vm, 2, &s);
             return sq_throwerror(
-                vm, ("member variable '" + string(s) + "' not found").c_str());
+                vm, (_SC("member variable '") + string(s) + _SC("' not found")).c_str());
         }
 		
         sq_push(vm, 1);

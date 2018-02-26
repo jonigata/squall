@@ -41,14 +41,14 @@ void call_setup(HSQUIRRELVM vm, const HSQOBJECT& table,
     sq_pushobject(vm, table);
     sq_pushstring(vm, name.data(), name.length());
     if (!SQ_SUCCEEDED(sq_get(vm, -2))) {
-        throw squirrel_error("can't find such function: " + name);
+        throw squirrel_error(_SC("can't find such function: ") + name);
     }
 
     sq_remove(vm, -2);
     sq_pushobject(vm, table);
     call_setup_arg(vm, args...);
     if (!SQ_SUCCEEDED(sq_call(vm, sizeof...(args)+1, SQTrue, SQTrue))) {
-        throw squirrel_error("function call failed: " + name);
+        throw squirrel_error(_SC("function call failed: ") + name);
     }
 }
 
