@@ -7,7 +7,7 @@ License: Modified BSD
 ## To make VM but do nothing
 
 C++
-```
+```c++
 #include "squall/squall_vm.hpp"
 
 int main() {
@@ -19,7 +19,7 @@ int main() {
 ## To make VM with standard library but do nothing
 
 C++
-```
+```c++
 #include "squall/squall_vmstd.hpp"
 
 int main() {
@@ -39,7 +39,7 @@ function foo() {
 ```
 
 C++
-```
+```c++
 #include "squall/squall_vmstd.hpp"
 #include <iostream>
 
@@ -71,7 +71,7 @@ function baz() {
 ```
 
 C++
-```
+```c++
 #include "squall/squall_vmstd.hpp"
 #include <iostream>
 
@@ -115,7 +115,7 @@ function zot(foo) {
 ```
 
 C++
-```
+```c++
 #include "squall/squall_vmstd.hpp"
 #include "squall/squall_klass.hpp"
 #include <iostream>
@@ -166,7 +166,7 @@ function bar() {
 ```
 
 C++
-```
+```c++
 #include "squall/squall_vmstd.hpp"
 #include <iostream>
 
@@ -209,7 +209,7 @@ function foo() {
 ```
 
 C++
-```
+```c++
 #include "../squall/squall_vmstd.hpp"
 #include <iostream>
 
@@ -255,7 +255,7 @@ function bar() {
 ```
 
 C++
-```
+```c++
 #include "../squall/squall_vmstd.hpp"
 #include <iostream>
 
@@ -293,7 +293,7 @@ function zot(foo2) {
 ```
 
 C++
-```
+```c++
 #include "../squall/squall_vmstd.hpp"
 #include <iostream>
 
@@ -352,7 +352,7 @@ function zot(foo) {
 ```
 
 C++
-```
+```c++
 #include "../squall/squall_vmstd.hpp"
 #include "../squall/squall_klass.hpp"
 #include <iostream>
@@ -399,7 +399,7 @@ function baz(foo) {
 ```
 
 C++
-```
+```c++
 #include "../squall/squall_vmstd.hpp"
 #include "../squall/squall_klass.hpp"
 #include <iostream>
