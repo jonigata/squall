@@ -1,5 +1,5 @@
-#ifndef UTILITY_HPP_
-#define UTILITY_HPP_
+#ifndef SQUALL_UTILITY_HPP_
+#define SQUALL_UTILITY_HPP_
 
 #include <squirrel.h>
 #include <string>
@@ -139,5 +139,5 @@ void print_stack_object(S& s, HSQUIRRELVM vm, SQInteger idx) {
 
 }
 
-#endif // UTILITY_HPP_
+#endif // SQUALL_UTILITY_HPP_
 
