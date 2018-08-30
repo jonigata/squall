@@ -1,6 +1,7 @@
 #ifndef SQUALL_VMSTD_HPP_
 #define SQUALL_VMSTD_HPP_
 
+#include <cstring>
 #include <squirrel.h>
 #include <sqstdio.h>
 #include <sqstdaux.h>

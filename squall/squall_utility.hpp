@@ -4,6 +4,7 @@
 #include <squirrel.h>
 #include <string>
 #include <codecvt>
+#include <locale>
 #include <type_traits>
 
 namespace squall {
@@ -11,30 +12,33 @@ namespace squall {
 using string = std::basic_string<SQChar>;
 
 namespace detail {
-    template<class T>
-    struct _locale_converter {
-        template<class U = T, typename std::enable_if<std::is_same<U, char>::value, std::nullptr_t>::type = nullptr>
-        static const std::string& to_std_string(const string& str) {
-            return str;
-        }
 
-        template<class U = T, typename std::enable_if<std::is_same<U, wchar_t>::value, std::nullptr_t>::type = nullptr>
-        static std::string to_std_string(const string& str) {
-            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-            return converter.to_bytes(str);
-        }
+template <class T>
+struct _locale_converter {
+};
 
-        template<class U = T, typename std::enable_if<std::is_same<U, char>::value, std::nullptr_t>::type = nullptr>
-        static const string& to_squall_string(const std::string& str) {
-            return str;
-        }
+template <>
+struct _locale_converter<char> {
+    static const std::string& to_std_string(const std::string& s) {
+        return s;
+    }
+    static const std::string& to_squall_string(const std::string& s) {
+        return s;
+    }
+};
 
-        template<class U = T, typename std::enable_if<std::is_same<U, wchar_t>::value, std::nullptr_t>::type = nullptr>
-        static string to_squall_string(const std::string& str) {
-            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-            return converter.from_bytes(str);
-        }
-    };
+template <>
+struct _locale_converter<wchar_t> {
+    static std::string to_std_string(const std::wstring& s) {
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        return converter.to_bytes(s);
+    }
+    static std::wstring to_squall_string(const std::string& s) {
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        return converter.from_bytes(s);
+    }
+};
+
 }
 
 using locale_converter = detail::_locale_converter<SQChar>;
