@@ -156,7 +156,7 @@ void push_closure(HSQUIRRELVM vm, std::function<R (A...)> v) {
     construct_object(vm, v);
     sq_newclosure(vm, stub<1, std::function<R (A...)>>, 1);
     sq_setparamscheck(vm, SQ_MATCHTYPEMASKSTRING, argtypemask.c_str());
-    sq_setnativeclosurename(vm, -1, "<C++ lambda>");
+    sq_setnativeclosurename(vm, -1, _SC("<C++ lambda>"));
 }
 
 }

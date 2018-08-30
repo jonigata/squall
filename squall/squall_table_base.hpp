@@ -26,7 +26,7 @@ public:
         if(get<T>(name, r)) {
             return r;
         }
-        throw squirrel_error("slot '" + name + "' not found");
+        throw squirrel_error(_SC("slot '") + name + _SC("' not found"));
     }
 
     template <class T>
