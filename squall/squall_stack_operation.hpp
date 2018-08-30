@@ -212,7 +212,7 @@ struct Fetch<std::function<R (A...)>, FC> {
 
 template <FetchContext FC, class Int>
 struct FetchInt {
-    static SQInteger doit(HSQUIRRELVM vm, SQInteger index) {
+    static Int doit(HSQUIRRELVM vm, SQInteger index) {
         return static_cast<Int>(
             getdata<SQInteger, FC>(vm, index, OT_INTEGER, sq_getinteger));
     }
